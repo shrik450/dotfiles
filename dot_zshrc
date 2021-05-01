@@ -114,9 +114,10 @@ function is {
 
 alias grh="git reset --hard"
 alias m="mullvad"
+alias c="clear"
 
 gpsu() {
-  git push --set-upstream orign `git branch --show-current`
+  git push --set-upstream origin `git branch --show-current`
 }
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
