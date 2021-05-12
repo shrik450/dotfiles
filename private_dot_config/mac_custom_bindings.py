@@ -41,8 +41,7 @@ define_keymap(
         K("Super-Shift-p"): K("C-Shift-p"),
         K("Super-comma"): K("C-comma"),
         K("Super-slash"): K("C-slash"),
-        K("M-left"): K("C-left"),
-        K("M-right"): K("C-right"),
-    },
+        K("Super-d"): K("C-d"),
+   },
     "Default mac-style for non-terminal use."
 )
