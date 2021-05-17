@@ -195,6 +195,6 @@ exec_always --no-startup-id $HOME/.config/i3/init.sh
 
 # Gaps
 for_window [class=".*"] border pixel 0
-gaps inner 15
-gaps outer 10 
+gaps inner 10 
+gaps outer 2 
 
