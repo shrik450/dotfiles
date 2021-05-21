@@ -7,6 +7,7 @@ terminals = [
     "gnome-terminal",
     "konsole",
     "kitty",
+    "emacs",  # Not strictly a terminal, but requires C and M to be normal.
 ]
 terminals = [term.casefold() for term in terminals]
 
@@ -20,7 +21,7 @@ define_conditional_modmap(
     lambda wm_class: wm_class.casefold() not in terminals,
     {
         Key.LEFT_CTRL: Key.LEFT_META,
-        Key.LEFT_META: Key.LEFT_CTRL
+        Key.LEFT_META: Key.LEFT_CTRL,
     }
 )
 
