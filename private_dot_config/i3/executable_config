@@ -55,7 +55,7 @@ bindsym Control+q kill
 # start dmenu (a program launcher)
 bindsym Control+space exec "rofi -combi-modi run,drun -show combi -modi combi"
 bindsym Mod4+space exec "rofi -combi-modi run,drun -show combi -modi combi"
-bindsym Mod4+Tab exec rofi -show
+bindsym Control+Tab exec rofi -show
 
 # change focus
 # bindsym $mod+j focus left
@@ -177,7 +177,7 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # Flameshot
-bindsym Mod4+shift+4 exec "flameshot gui"
+bindsym Ctrl+shift+4 exec "flameshot gui"
 
 # i3lock
 bindsym $mod+Escape exec "i3lock -c 111111"
