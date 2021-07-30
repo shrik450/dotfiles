@@ -7,7 +7,8 @@ terminals = [
     "gnome-terminal",
     "konsole",
     "kitty",
-    "emacs",  # Not strictly a terminal, but requires C and M to be normal.
+    "emacs-gtk",  # Not strictly a terminal, but requires C and M to be normal.
+    "barrier", # Because I want to send raw events across instead
 ]
 terminals = [term.casefold() for term in terminals]
 

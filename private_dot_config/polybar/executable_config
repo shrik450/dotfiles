@@ -28,7 +28,7 @@ secondary = #e60053
 alert = #bd2c40
 
 [bar/mybar]
-;monitor = ${env:MONITOR:DP-0}
+monitor = ${env:MONITOR:DP-0}
 width = 100%
 height = 40
 ;offset-x = 1%
@@ -115,36 +115,35 @@ index-sort = true
 wrapping-scroll = false
 
 ; Only show workspaces on the same output as the bar
-;pin-workspaces = true
+pin-workspaces = true
 
 label-mode-padding = 2
 label-mode-foreground = #000
 label-mode-background = ${colors.primary}
 
 ; focused = Active workspace on focused monitor
-label-focused = %index%
+label-focused = %name%
 label-focused-background = ${colors.background-alt}
 label-focused-underline= ${colors.primary}
 label-focused-padding = 2
 
 ; unfocused = Inactive workspace on any monitor
-label-unfocused = %index%
+label-unfocused = %name%
 label-unfocused-padding = 2
 
 ; visible = Active workspace on unfocused monitor
-label-visible = %index%
+label-visible = %name%
 label-visible-background = ${self.label-focused-background}
 label-visible-underline = ${self.label-focused-underline}
 label-visible-padding = ${self.label-focused-padding}
 
 ; urgent = Workspace with urgency hint set
-label-urgent = %index%
+label-urgent = %name%
 label-urgent-background = ${colors.alert}
 label-urgent-padding = 2
 
 ; Separator in between workspaces
 ; label-separator = |
-
 
 [module/mpd]
 type = internal/mpd
@@ -199,7 +198,7 @@ label = %gb_used% + %gb_free%
 
 [module/wlan]
 type = internal/network
-interface = wlp2s0 
+interface = wlp2s0
 interval = 3.0
 
 format-connected =   <label-connected>
@@ -258,7 +257,7 @@ format-volume = <label-volume> <bar-volume>
 label-volume = 
 label-volume-foreground = ${root.foreground}
 
-label-muted =  
+label-muted = 
 label-muted-foreground = #666
 
 bar-volume-width = 10
@@ -353,8 +352,8 @@ label = %temperature-c%
 label-warn = %temperature-c%
 label-warn-foreground = ${colors.secondary}
 
-ramp-0 =  
-ramp-1 =  
+ramp-0 = 
+ramp-1 = 
 ramp-2 = 
 ramp-foreground = ${colors.foreground-alt}
 
