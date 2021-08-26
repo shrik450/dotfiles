@@ -9,7 +9,7 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
-set $mod Mod1
+set $mod Mod4
 
 # I prefer the stacking layout *for now*, simply because it makes in some
 # situations I like having one major window on the left which stacks.
@@ -22,7 +22,7 @@ workspace_layout stacking
 # is used in the bar {} block below.
 # ??? That's weird, my current font is JetBrains Mono, how is this still
 # Cascadia?
-font pango:CaskaydiaCove Nerd Font 10
+font pango:JetBrains Mono
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -62,7 +62,7 @@ bindsym Control+q kill
 
 # start dmenu (a program launcher)
 bindsym Control+space exec "rofi -combi-modi run,drun -show combi -modi combi"
-bindsym Mod4+space exec "rofi -combi-modi run,drun -show combi -modi combi"
+bindsym Mod1+space exec "rofi -combi-modi run,drun -show combi -modi combi"
 bindsym Control+Tab exec rofi -show
 
 # change focus
@@ -117,21 +117,20 @@ bindsym $mod+a focus parent
 # This isn't as device agnostic as I'd like, but I don't use i3 except
 # on my PC, so when push comes to show I'll try to split it out into
 # separate configs for each device.
-
 set $d_main DP-0
 set $d_left HDMI-0
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
 set $ws1 "1:home"
-set $ws2 "2:comms"
+set $ws2 "2:home"
 set $ws3 "3:back"
 set $ws4 "4:b-web"
 set $ws5 "5:front"
 set $ws6 "6:f-web"
 set $ws7 "7"
-set $ws8 "8:org"
-set $ws9 "9"
+set $ws8 "8"
+set $ws9 "9:org"
 set $ws10 "10:media"
 
 # Bind workspaces to displays
@@ -211,7 +210,8 @@ bindsym Ctrl+shift+4 exec "flameshot gui"
 # i3lock
 # The color here when used with picoms transparency + blur gives a cool frosted
 # glass lock screen!
-bindsym $mod+Escape exec "i3lock -c 111111"
+# bindsym $mod+Escape exec "i3lock -c 111111"
+bindsym $mod+Escape exec "sh -c 'i3lock -c 111111 && sleep 2 && systemctl suspend'"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
