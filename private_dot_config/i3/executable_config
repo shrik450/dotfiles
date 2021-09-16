@@ -117,8 +117,8 @@ bindsym $mod+a focus parent
 # This isn't as device agnostic as I'd like, but I don't use i3 except
 # on my PC, so when push comes to show I'll try to split it out into
 # separate configs for each device.
-set $d_main DP-0
-set $d_left HDMI-0
+set $d_main HDMI-0
+set $d_secondary DP-0
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
@@ -136,15 +136,15 @@ set $ws10 "10:media"
 # Bind workspaces to displays
 # See caveat on displays above.
 workspace $ws1 output $d_main
-workspace $ws2 output $d_left
+workspace $ws2 output $d_secondary
 workspace $ws3 output $d_main
-workspace $ws4 output $d_left
+workspace $ws4 output $d_secondary
 workspace $ws5 output $d_main
-workspace $ws6 output $d_left
+workspace $ws6 output $d_secondary
 workspace $ws7 output $d_main
-workspace $ws8 output $d_left
+workspace $ws8 output $d_secondary
 workspace $ws9 output $d_main
-workspace $ws10 output $d_left
+workspace $ws10 output $d_secondary
 
 # switch to workspace
 bindsym $mod+1 workspace $ws1
