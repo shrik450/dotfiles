@@ -4,9 +4,9 @@
 xrandr --output DP-0 --primary --right-of HDMI-0
 
 # Load wallpaper with feh
-feh --bg-center ~/wallpapers/4k-Wallpaper-Download-61-Group-Wallpapers.jpg
+feh --bg-fill ~/wallpapers/4spdee0qw1971.jpg
 
 # Load other services
-# bus-daemon -dr
+ibus-daemon -dr
 
 

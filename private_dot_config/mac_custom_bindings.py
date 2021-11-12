@@ -30,9 +30,10 @@ define_conditional_modmap(
 )
 
 define_keymap(
-    None,
+    lambda wm_class: wm_class.casefold() not in terminals,
     {
         K("C-Shift-left_brace"): K("C-page_up"),
         K("C-Shift-right_brace"): K("C-page_down"),
+        K("C-Space"): K("M-Space"),
     }
 )
