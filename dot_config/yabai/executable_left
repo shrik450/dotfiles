@@ -3,15 +3,15 @@
 require_relative "stacking"
 
 cwindow = current_window
-if has_window_above? cwindow
-  yabai "window --focus north"
+if has_window_left? cwindow
+  yabai "window --focus west"
 elsif window_in_stack? cwindow
   fwcs = first_window_of_current_stack
   if fwcs["id"] == cwindow["id"]
-    yabai "window --focus north"
+    yabai "window --focus west"
   else
     yabai "window --focus stack.prev"
   end
 else
-  yabai "window --focus north"
+  yabai "window --focus west"
 end
