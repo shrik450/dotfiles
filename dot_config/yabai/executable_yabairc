@@ -1,0 +1,13 @@
+# Tile by default.
+yabai -m config layout bsp
+
+# Apps Yabai shouldn't be touching
+yabai -m rule --add app="^(System Preferences)$" manage=off
+
+yabai -m config \
+    top_padding          5           \
+    bottom_padding       5           \
+    left_padding         5           \
+    right_padding        5           \
+    window_gap          10           \
+    window_placement    second_child

@@ -1,0 +1,15 @@
+#! /Users/shrik450/.rvm/rubies/ruby-3.1.2/bin/ruby --disable=gems
+
+require_relative "stacking"
+
+cwindow = current_window
+if window_in_stack? cwindow
+  fwcs = first_window_of_current_stack
+  if fwcs["id"] == cwindow["id"]
+    yabai "window --focus north"
+  else
+    yabai "window --focus stack.prev"
+  end
+else
+  yabai "window --focus north"
+end

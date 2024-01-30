@@ -1,0 +1,22 @@
+# I don't keep too many spaces/displays, so I'd rather swap.
+ctrl + alt - c : yabai -m display --focus recent
+
+ctrl + alt - left  : yabai -m window --focus west
+ctrl + alt - down  : /Users/shrik450/.config/yabai/down
+ctrl + alt - up    : /Users/shrik450/.config/yabai/up
+ctrl + alt - right : yabai -m window --focus east
+
+meh - left  : yabai -m window --warp west
+meh - down  : yabai -m window --warp south
+meh - up    : yabai -m window --warp north
+meh - right : yabai -m window --warp east
+
+ctrl + shift - left  : yabai -m window --stack west
+ctrl + shift - down  : yabai -m window --stack south
+ctrl + shift - up    : yabai -m window --stack north
+ctrl + shift - right : yabai -m window --stack east
+
+shift + ctrl - right : yabai -m space --create
+shift + ctrl - escape : yabai -m space --destroy
+
+meh - c : yabai -m window --display recent
