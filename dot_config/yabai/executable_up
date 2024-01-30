@@ -1,4 +1,4 @@
-#! /Users/shrik450/.rvm/rubies/ruby-3.1.2/bin/ruby --disable=gems
+#! /Users/shrik450/.asdf/shims/ruby --disable=gems
 
 require_relative "stacking"
 
