@@ -1,8 +1,14 @@
-# I don't keep too many spaces/displays, so I'd rather swap.
+# Best system I've found for anywhere from 1 to 3 displays:
+# Cycle between displays
 ctrl + alt - c : yabai -m display --focus next || yabai -m display --focus first
-
+# Specifically switch on X axis
 ctrl + alt - h : yabai -m display --focus west
 ctrl + alt - l : yabai -m display --focus east
+
+# Ditto
+meh - c : (yabai -m window --display next || yabai -m window --display first) && (yabai -m display --focus next || yabai -m display --focus first)
+meh - h : yabai -m window --display west && yabai -m display --focus west
+meh - l : yabai -m window --display east && yabai -m display --focus east
 
 ctrl + alt - left  : /Users/shrik450/.config/yabai/left
 ctrl + alt - down  : /Users/shrik450/.config/yabai/down
@@ -19,4 +25,3 @@ ctrl + shift - down  : yabai -m window --stack south
 ctrl + shift - up    : yabai -m window --stack north
 ctrl + shift - right : yabai -m window --stack east
 
-meh - c : yabai -m window --display recent
