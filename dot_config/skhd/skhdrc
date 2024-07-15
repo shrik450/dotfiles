@@ -1,27 +1,36 @@
-# Best system I've found for anywhere from 1 to 3 displays:
+# Note: I've stopped using 2+ displays enough to need spatial navigation
+# between displays, and so cycling is the only option I still use.
+
+# Basic idioms:
+# - Everything uses Ctrl
+# - Bindings with shift move windows, without don't
+
 # Cycle between displays
 ctrl + alt - c : yabai -m display --focus next || yabai -m display --focus first
-# Specifically switch on X axis
-ctrl + alt - h : yabai -m display --focus west
-ctrl + alt - l : yabai -m display --focus east
+# Old system for spatial display navigation
+# # Specifically switch on X axis
+# ctrl + alt - h : yabai -m display --focus west
+# ctrl + alt - l : yabai -m display --focus east
 
-# Ditto
+# This is the only multi display setup I need in case I'm using the mac lid
+# open.
 meh - c : (yabai -m window --display next || yabai -m window --display first) && (yabai -m display --focus next || yabai -m display --focus first)
-meh - h : yabai -m window --display west && yabai -m display --focus west
-meh - l : yabai -m window --display east && yabai -m display --focus east
+# Old system for spatial display navigation
+# meh - h : yabai -m window --display west && yabai -m display --focus west
+# meh - l : yabai -m window --display east && yabai -m display --focus east
 
-ctrl + alt - left  : /Users/shrik450/.config/yabai/left
-ctrl + alt - down  : /Users/shrik450/.config/yabai/down
-ctrl + alt - up    : /Users/shrik450/.config/yabai/up
-ctrl + alt - right : /Users/shrik450/.config/yabai/right
+ctrl + alt - h  : /Users/shrik450/.config/yabai/left
+ctrl + alt - j  : /Users/shrik450/.config/yabai/down
+ctrl + alt - k    : /Users/shrik450/.config/yabai/up
+ctrl + alt - l : /Users/shrik450/.config/yabai/right
 
-meh - left  : yabai -m window --warp west
-meh - down  : yabai -m window --warp south
-meh - up    : yabai -m window --warp north
-meh - right : yabai -m window --warp east
+meh - h  : yabai -m window --warp west
+meh - j  : yabai -m window --warp south
+meh - k    : yabai -m window --warp north
+meh - l : yabai -m window --warp east
 
-ctrl + shift - left  : yabai -m window --stack west
-ctrl + shift - down  : yabai -m window --stack south
-ctrl + shift - up    : yabai -m window --stack north
-ctrl + shift - right : yabai -m window --stack east
+ctrl + shift - h  : yabai -m window --stack west
+ctrl + shift - j  : yabai -m window --stack south
+ctrl + shift - k    : yabai -m window --stack north
+ctrl + shift - l : yabai -m window --stack east
 
