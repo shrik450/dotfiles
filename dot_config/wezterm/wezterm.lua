@@ -9,13 +9,14 @@ else
 	config.color_scheme = "Github (base16)"
 end
 
-config.font = wezterm.font({ family = "SF Mono" })
+config.font = wezterm.font({ family = "SF Mono", weight = "Medium" })
+config.front_end = "WebGpu"
 config.font_size = 13.0
 
 config.window_decorations = "RESIZE|INTEGRATED_BUTTONS"
 
 config.window_frame = {
-	font = wezterm.font({ family = "SF Mono" }),
+	font = wezterm.font({ family = "SF Mono", weight = "Bold" }),
 	font_size = 11.0,
 }
 
