@@ -1,0 +1,164 @@
+tap "hashicorp/tap"
+tap "homebrew/bundle"
+tap "homebrew/cask-fonts"
+tap "homebrew/services"
+tap "railwaycat/emacsmacport"
+# General-purpose data compression with high compression ratio
+brew "xz"
+# TIFF library and utilities
+brew "libtiff"
+# New file format for still image compression
+brew "jpeg-xl"
+# Codec library for encoding and decoding AV1 video streams
+brew "aom"
+# Cryptography and SSL/TLS Toolkit
+brew "openssl@3"
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
+# Python code formatter
+brew "black"
+# Core application library for C
+brew "glib"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.12"
+# Manage your dotfiles across multiple diverse machines, securely
+brew "chezmoi"
+# Linux virtual machines
+brew "lima"
+# Container runtimes on MacOS (and Linux) with minimal setup
+brew "colima"
+# GNU multiple precision arithmetic library
+brew "gmp"
+# GNU File, Shell, and Text utilities
+brew "coreutils"
+# Secure runtime for JavaScript and TypeScript
+brew "deno"
+# Pack, ship and run any application as a lightweight container
+brew "docker"
+# Docker CLI plugin for extended build capabilities with BuildKit
+brew "docker-buildx"
+# Isolated development environments using Docker
+brew "docker-compose"
+# Modern, maintained replacement for ls
+brew "eza"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Validating, recursive, caching DNS resolver
+brew "unbound"
+# GNU Transport Layer Security (TLS) Library
+brew "gnutls"
+# OpenType text shaping engine
+brew "harfbuzz"
+# Framework for layout and rendering of i18n text
+brew "pango"
+# Play, record, convert, and stream audio and video
+brew "ffmpeg"
+# User-friendly command-line shell for UNIX-like operating systems
+brew "fish", args: ["HEAD"]
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# GNU compiler collection
+brew "gcc"
+# GitHub command-line tool
+brew "gh"
+# Interpreter for PostScript and PDF
+brew "ghostscript"
+# Distributed revision control system
+brew "git"
+# Syntax-highlighting pager for git and diff output
+brew "git-delta"
+# Git extension for versioning large files
+brew "git-lfs"
+# Blazing fast terminal-ui for git written in rust
+brew "gitui"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
+# Image manipulation
+brew "netpbm"
+# Library to render SVG files using Cairo
+brew "librsvg"
+# Graph visualization software from AT&T and Bell Labs
+brew "graphviz"
+# Run and Test HTTP Requests with plain text and curl
+brew "hurl"
+# Command-line benchmarking tool
+brew "hyperfine"
+# ISO/IEC 23008-12:2017 HEIF file format decoder and encoder
+brew "libheif"
+# Library for reading RAW files from digital photo cameras
+brew "libraw"
+# Tools and libraries to manipulate images in many formats
+brew "imagemagick"
+# International Ispell
+brew "ispell"
+# Git-compatible distributed version control system
+brew "jj"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# YAML Parser
+brew "libyaml"
+# Platform built on V8 to build network applications
+brew "node"
+# Interactive environments for writing and running code
+brew "jupyterlab"
+# Simple terminal UI for git commands
+brew "lazygit"
+# JIT library for the GNU compiler collection
+brew "libgccjit"
+# Access large language models from the command-line
+brew "llm"
+# Polyglot runtime manager (asdf rust clone)
+brew "mise"
+# Feature-rich command-line audio/video downloader
+brew "yt-dlp"
+# Media player based on MPlayer and mplayer2
+brew "mpv"
+# Ambitious Vim-fork focused on extensibility and agility
+brew "neovim"
+# Create, run, and share large language models (LLMs)
+brew "ollama"
+# Object-relational database system
+brew "postgresql@14", restart_service: :changed
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# Rust toolchain installer
+brew "rustup"
+# Static analysis and lint tool, for (ba)sh scripts
+brew "shellcheck"
+# Cross-shell prompt for astronauts
+brew "starship"
+# Program that allows you to count code, quickly
+brew "tokei"
+# Command-line unarchiving tools supporting multiple formats
+brew "unar"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# Internet file retriever
+brew "wget"
+# Blazing fast terminal file manager written in Rust, based on async I/O
+brew "yazi"
+# Programming language designed for robustness, optimality, and clarity
+brew "zig"
+# Language Server for Zig
+brew "zls"
+# Shell extension to navigate your filesystem faster
+brew "zoxide"
+# YAMAMOTO Mitsuharu's Mac port of GNU Emacs
+brew "railwaycat/emacsmacport/emacs-mac", args: ["HEAD", "with-emacs-big-sur-icon", "with-imagemagick", "with-librsvg", "with-mac-metal", "with-native-compilation"]
+cask "font-fira-code"
+cask "font-ia-writer-quattro"
+cask "font-jetbrains-mono"
+# SFMono with Nerd Font Glyphs and Fira Code Ligatures
+cask "font-sf-mono-nerd-font-ligaturized"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+# Desktop automation application
+cask "hammerspoon"
+# Terminal emulator as alternative to Apple's Terminal app
+cask "iterm2"
+# GPU-based terminal emulator
+cask "kitty"
+# Tool to control external monitor brightness & volume
+cask "monitorcontrol"
+# GPU-accelerated cross-platform terminal emulator and multiplexer
+cask "wezterm"

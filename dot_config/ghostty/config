@@ -781,7 +781,7 @@ keybind = super+left_bracket=goto_split:previous
 keybind = super+physical:nine=goto_tab:9
 keybind = super+right_bracket=goto_split:next
 keybind = super+end=scroll_to_bottom
-keybind = super+shift+j=write_scrollback_file:paste
+keybind = super+shift+j=write_screen_file:paste
 keybind = super+shift+d=new_split:down
 keybind = super+zero=reset_font_size
 keybind = super+physical:five=goto_tab:5
