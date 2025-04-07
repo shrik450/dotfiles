@@ -1,88 +1,60 @@
--- Tiling Config
+PaperWM = hs.loadSpoon("PaperWM")
 
--- Gap between windows and screen edges
-WindowGap = 5
+PaperWM:bindHotkeys({
+	-- switch to a new focused window in tiled grid
+	focus_left = { { "alt", "ctrl" }, "h" },
+	focus_right = { { "alt", "ctrl" }, "l" },
+	focus_up = { { "alt", "ctrl" }, "k" },
+	focus_down = { { "alt", "ctrl" }, "j" },
 
-hs.hotkey.bind({ "alt", "ctrl", "shift" }, "h", function()
-	local win = hs.window.focusedWindow()
-	local f = win:frame()
-	local screen = win:screen()
-	local max = screen:frame()
+	-- move windows around in tiled grid
+	swap_left = { { "alt", "ctrl", "shift" }, "h" },
+	swap_right = { { "alt", "ctrl", "shift" }, "l" },
+	swap_up = { { "alt", "ctrl", "shift" }, "k" },
+	swap_down = { { "alt", "ctrl", "shift" }, "j" },
 
-	f.x = max.x + WindowGap
-	f.y = max.y + WindowGap
-	f.w = max.w / 2 - (2 * WindowGap)
-	f.h = max.h - (2 * WindowGap)
-	win:setFrame(f)
-end)
+	-- position and resize focused window
+	center_window = { { "alt", "ctrl" }, "c" },
+	full_width = { { "alt", "ctrl" }, "f" },
+	cycle_width = { { "alt", "ctrl" }, "r" },
+	reverse_cycle_width = { { "ctrl", "alt", "cmd" }, "r" },
+	cycle_height = { { "alt", "ctrl" }, "p" },
+	reverse_cycle_height = { { "ctrl", "alt", "cmd", "shift" }, "r" },
 
-hs.hotkey.bind({ "alt", "ctrl", "shift" }, "l", function()
-	local win = hs.window.focusedWindow()
-	local f = win:frame()
-	local screen = win:screen()
-	local max = screen:frame()
+	-- move focused window into / out of a column
+	slurp_in = { { "alt", "ctrl" }, "i" },
+	barf_out = { { "alt", "ctrl" }, "o" },
 
-	f.x = max.x + (max.w / 2) + WindowGap
-	f.y = max.y + WindowGap
-	f.w = max.w / 2 - (2 * WindowGap)
-	f.h = max.h - (2 * WindowGap)
-	win:setFrame(f)
-end)
+	-- move the focused window into / out of the tiling layer
+	toggle_floating = { { "alt", "ctrl", "shift" }, "escape" },
 
-hs.hotkey.bind({ "alt", "ctrl", "shift" }, "f", function()
-	local win = hs.window.focusedWindow()
-	local f = win:frame()
-	local screen = win:screen()
-	local max = screen:frame()
+	-- switch to a new Mission Control space
+	switch_space_l = { { "alt", "ctrl" }, "," },
+	switch_space_r = { { "alt", "ctrl" }, "." },
+	switch_space_1 = { { "alt", "ctrl" }, "1" },
+	switch_space_2 = { { "alt", "ctrl" }, "2" },
+	switch_space_3 = { { "alt", "ctrl" }, "3" },
+	switch_space_4 = { { "alt", "ctrl" }, "4" },
+	switch_space_5 = { { "alt", "ctrl" }, "5" },
+	switch_space_6 = { { "alt", "ctrl" }, "6" },
+	switch_space_7 = { { "alt", "ctrl" }, "7" },
+	switch_space_8 = { { "alt", "ctrl" }, "8" },
+	switch_space_9 = { { "alt", "ctrl" }, "9" },
 
-	f.x = max.x + WindowGap
-	f.y = max.y + WindowGap
-	f.w = max.w - (2 * WindowGap)
-	f.h = max.h - (2 * WindowGap)
-	win:setFrame(f)
-end)
-
-hs.hotkey.bind({ "alt", "ctrl" }, "h", function()
-	hs.window.filter.focusWest()
-end)
-
-hs.hotkey.bind({ "alt", "ctrl" }, "l", function()
-	hs.window.filter.focusEast()
-end)
-
-hs.hotkey.bind({ "alt", "ctrl" }, "n", function()
-	local focused = hs.window.focusedWindow()
-	if not focused then
-		return {}
-	end
-
-	local focusedFrame = focused:frame()
-	local allWindows = hs.window.orderedWindows()
-	local samePositionWindows = {}
-
-	for _, window in ipairs(allWindows) do
-		local frame = window:frame()
-		if math.abs(frame.x - focusedFrame.x) < 10 and math.abs(frame.y - focusedFrame.y) < 10 then
-			table.insert(samePositionWindows, window)
-		end
-	end
-
-	if #samePositionWindows <= 1 then
-		return
-	end
-
-	local currentIndex = 1
-
-	for i, window in ipairs(samePositionWindows) do
-		if window:id() == focused:id() then
-			currentIndex = i
-			break
-		end
-	end
-
-	local nextIndex = (currentIndex == 1) and #samePositionWindows or (currentIndex - 1)
-	samePositionWindows[nextIndex]:focus()
-end)
+	-- move focused window to a new space and tile
+	move_window_1 = { { "alt", "ctrl", "shift" }, "1" },
+	move_window_2 = { { "alt", "ctrl", "shift" }, "2" },
+	move_window_3 = { { "alt", "ctrl", "shift" }, "3" },
+	move_window_4 = { { "alt", "ctrl", "shift" }, "4" },
+	move_window_5 = { { "alt", "ctrl", "shift" }, "5" },
+	move_window_6 = { { "alt", "ctrl", "shift" }, "6" },
+	move_window_7 = { { "alt", "ctrl", "shift" }, "7" },
+	move_window_8 = { { "alt", "ctrl", "shift" }, "8" },
+	move_window_9 = { { "alt", "ctrl", "shift" }, "9" },
+})
+PaperWM.window_gap = 4
+PaperWM.window_ratios = { 0.4, 0.5, 0.6 }
+PaperWM:start()
 
 -- Caffeinate menubar icon
 
@@ -106,9 +78,7 @@ end
 
 -- Open Emacs in "quake mode"
 
-local emacsWindow = nil
 local emacsVisible = false
-local originalFrame = nil
 
 function ToggleEmacsQuakeMode()
 	if emacsVisible then
@@ -119,34 +89,20 @@ function ToggleEmacsQuakeMode()
 end
 
 function ShowEmacs()
-	if emacsWindow == nil then
-		hs.application.launchOrFocus("Emacs")
-		emacsWindow = hs.window.find("Emacs")
-	end
+	hs.application.launchOrFocus("Emacs")
+	local emacsWindow = hs.window.find("Emacs")
 
 	if emacsWindow then
-		local screen = hs.screen.mainScreen()
-		local max = screen:frame()
-		local quakeFrame = {
-			x = max.x + (max.w / 2) + WindowGap,
-			y = max.y + WindowGap,
-			w = max.w / 2 - (2 * WindowGap),
-			h = max.h - (2 * WindowGap),
-		}
-		emacsWindow:setFrame(quakeFrame)
 		emacsWindow:focus()
 		emacsVisible = true
 	end
 end
 
 function HideEmacs()
-	if emacsWindow then
-		if originalFrame then
-			emacsWindow:setFrame(originalFrame)
-		else
-			emacsWindow:minimize()
-		end
-		emacsWindow = nil
+	local emacsWindow = hs.window.find("Emacs")
+
+	if emacsVisible then
+		emacsWindow:minimize()
 		emacsVisible = false
 	end
 end

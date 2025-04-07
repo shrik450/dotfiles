@@ -1,0 +1,8 @@
+# pack-refs with: peeled fully-peeled sorted 
+94be19e1d4c4524075474e9a9bd0bffc1bbac8e7 refs/remotes/origin/firefox-profiles
+0bbfe74e13462225018d9664a658865d56a5539d refs/remotes/origin/fix-focus-on-remove-window
+a2e985ce33ea9cd039c8a54486557fd526dd653d refs/remotes/origin/ignore-tabbed-windows
+7aceaaee07301b425fc36e96c141cff146d41a7e refs/remotes/origin/main
+dbf5b9d01eef538c299f01f9f8ede942fde67095 refs/remotes/origin/pull-windows-in
+802dd39d7b228cdc02e1dc312bf2cb5c114aec13 refs/remotes/origin/release
+bce6393ba0b12c7c0f67ebb0ecfda810dcef1637 refs/remotes/origin/warpmouse
