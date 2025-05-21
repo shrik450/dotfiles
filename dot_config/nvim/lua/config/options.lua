@@ -3,3 +3,4 @@
 -- Add any additional options here
 
 vim.g.colorcolumn = "100"
+vim.opt.spell = false
