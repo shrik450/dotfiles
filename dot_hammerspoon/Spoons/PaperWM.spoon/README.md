@@ -66,12 +66,6 @@ PaperWM:bindHotkeys({
     swap_up    = {{"alt", "cmd", "shift"}, "up"},
     swap_down  = {{"alt", "cmd", "shift"}, "down"},
 
-    -- alternative: swap entire columns, rather than
-    -- individual windows (to be used instead of
-    -- swap_left / swap_right bindings)
-    -- swap_column_left = {{"alt", "cmd", "shift"}, "left"},
-    -- swap_column_right = {{"alt", "cmd", "shift"}, "right"},
-
     -- position and resize focused window
     center_window        = {{"alt", "cmd"}, "c"},
     full_width           = {{"alt", "cmd"}, "f"},
@@ -90,6 +84,8 @@ PaperWM:bindHotkeys({
 
     -- move the focused window into / out of the tiling layer
     toggle_floating = {{"alt", "cmd", "shift"}, "escape"},
+    -- raise all floating windows on top of tiled windows
+    focus_floating  = {{"alt", "cmd", "shift"}, "f"},
 
     -- focus the first / second / etc window in the current space
     focus_window_1 = {{"cmd", "shift"}, "1"},
@@ -149,6 +145,9 @@ modal:bind({}, "h", nil, actions.focus_left)
 modal:bind({}, "j", nil, actions.focus_down)
 modal:bind({}, "k", nil, actions.focus_up)
 modal:bind({}, "l", nil, actions.focus_right)
+modal:bind({}, "escape", function() modal:exit() end)
+
+PaperWM:start()
 ```
 
 `PaperWM:start()` will begin automatically tiling new and existing windows.
@@ -166,16 +165,40 @@ PaperWM.window_gap = 10
 PaperWM.window_gap  =  { top = 10, bottom = 8, left = 12, right = 12 }
 ```
 
+Third-party tools like [Sketchybar](https://github.com/felixkratz/sketchybar) 
+can be used to create custom status bars and/or dock. Set `PaperWM.external_bar` 
+to the to a table specifying `top`, `bottom` in number of pixels of your bar
+and dock to ensure consistent window placement on displays with and without a "notch".
+
+For example:
+
+```lua
+-- Add 40px offset for an external status bar
+PaperWM.external_bar = {top = 40}
+-- or, add 20px offset for an external status bar and 40px offset for an external dock
+PaperWM.external_bar = {top = 20, bottom = 40}
+```
+
 Configure the `PaperWM.window_filter` to set which apps and screens are managed.
 For example:
 
 ```lua
 -- ignore a specific app
 PaperWM.window_filter:rejectApp("iStat Menus Status")
+-- ignore a specific window of an app
+PaperWM.window_filter:setAppFilter("iTunes", { rejectTitles = "MiniPlayer" })
 -- list of screens to tile (use % to escape string match characters, like -)
 PaperWM.window_filter:setScreens({ "Built%-in Retina Display" })
 -- restart for new window filter to take effect
 PaperWM:start()
+```
+
+Set `PaperWM.center_mouse` to control whether the mouse cursor is centered on
+the screen after switching spaces. Default is `true`. Example:
+
+```lua
+-- disable mouse centering when switching spaces
+PaperWM.center_mouse = false
 ```
 
 Set `PaperWM.window_ratios` to the ratios to cycle window widths and heights
@@ -220,6 +243,21 @@ PaperWM.drag_window = { "alt", "cmd" }`
 
 -- set to a table of modifier keys to enable window lifting, default is nil
 PaperWM.lift_window = { "alt", "cmd", "shift" }
+```
+
+### Mouse Scrolling
+
+Spin the mouse scroll wheel while holding the `PaperWM.scroll_window` hotkey to
+slide all windows on a space left or right. Release the hotkey to stop. Change
+`PaperWM.scroll_gain` to a positive or negative number to adjust the direction
+and sensitivity.
+
+```lua
+-- set to a table of modifier keys to enable window scroling, default is nil
+PaperWM.scroll_window = { "alt", "cmd" }`
+
+-- increase move windows further when scrolling, invert to change direction
+PaperWM.scroll_gain = 10.0
 ```
 
 ## Limitations
