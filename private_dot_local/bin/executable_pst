@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STASH_DIR="$HOME/Developer/random-plans"
+
+for cmd in fzf bat; do
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "$cmd is required but not installed. Install with: brew install $cmd" >&2
+        exit 1
+    fi
+done
+
+resolve_conflict() {
+    local dest_dir="$1"
+    local base="$2"
+    local name="${base%.md}"
+    local target="$dest_dir/$base"
+
+    if [[ ! -e "$target" ]]; then
+        echo "$target"
+        return
+    fi
+
+    local i=1
+    while [[ -e "$dest_dir/${name}-${i}.md" ]]; do
+        i=$((i + 1))
+    done
+    echo "$dest_dir/${name}-${i}.md"
+}
+
+cmd_default() {
+    if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+        echo "Not inside a git repository." >&2
+        exit 1
+    fi
+
+    local file_list
+    file_list=$(git ls-files --others --exclude-standard -- '*.md' '**/*.md')
+
+    if [[ -z "$file_list" ]]; then
+        echo "No untracked markdown files found."
+        exit 0
+    fi
+
+    local selected
+    selected=$(echo "$file_list" | fzf --multi --header "Select files to stash (tab: toggle, enter: confirm)" --preview 'bat --color=always --style=plain --language=md --line-range=:20 {}' --preview-window "up:60%:wrap") || true
+
+    if [[ -z "$selected" ]]; then
+        exit 0
+    fi
+
+    mkdir -p "$STASH_DIR"
+
+    while IFS= read -r file; do
+        local dest
+        dest=$(resolve_conflict "$STASH_DIR" "$(basename "$file")")
+        mv "$file" "$dest"
+        echo "Moved $file → $dest"
+    done <<< "$selected"
+}
+
+cmd_search() {
+    if [[ ! -d "$STASH_DIR" ]]; then
+        echo "Stash directory does not exist yet: $STASH_DIR" >&2
+        exit 1
+    fi
+
+    local file_list
+    file_list=$(find "$STASH_DIR" -type f -name '*.md' | sort)
+
+    if [[ -z "$file_list" ]]; then
+        echo "No markdown files in stash."
+        exit 0
+    fi
+
+    local fzf_args=(
+        --header "Search stashed plans"
+        --preview 'echo "Modified: $(stat -f "%Sm" -t "%Y-%m-%d %H:%M" {})" && echo "---" && bat --color=always --style=plain --language=md --line-range=:20 {}'
+        --preview-window "up:60%:wrap"
+    )
+    if [[ $# -gt 0 ]]; then
+        fzf_args+=(--query "$*")
+    fi
+
+    local selected
+    selected=$(echo "$file_list" | fzf "${fzf_args[@]}") || true
+
+    if [[ -n "$selected" ]]; then
+        echo "$selected"
+    fi
+}
+
+case "${1:-}" in
+    search)
+        shift
+        cmd_search "$@"
+        ;;
+    "")
+        cmd_default
+        ;;
+    *)
+        echo "Usage: pst          - select untracked .md files to stash"
+        echo "       pst search   - fuzzy search stashed plans"
+        exit 1
+        ;;
+esac
