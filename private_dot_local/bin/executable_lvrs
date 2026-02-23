@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euo pipefail
+
+chezmoi apply ~/.config/nvim/
+nvim --headless "+Lazy! restore" +qa

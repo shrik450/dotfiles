@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "Clearing nvim state, cache, and plugins..."
+rm -rf ~/.local/share/nvim ~/.local/state/nvim ~/.cache/nvim
+
+echo "Applying chezmoi config..."
+chezmoi apply ~/.config/nvim/
+
+echo "Restoring plugins from lock file..."
+nvim --headless "+Lazy! restore" +qa
+
+echo "Done."
