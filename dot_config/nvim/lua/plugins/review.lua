@@ -7,7 +7,7 @@ return {
       { "<leader>gn", "<cmd>Neogit<cr>", desc = "Neogit status" },
     },
     opts = {
-      kind = "tab",
+      kind = "replace",
     },
   },
   {
