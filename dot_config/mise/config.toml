@@ -1,0 +1,10 @@
+[tools]
+ruby = "3.3"
+node = "latest"
+elixir = "1.16"
+erlang = "26"
+python = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = ["python"]
+experimental = true
