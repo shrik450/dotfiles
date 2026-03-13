@@ -21,7 +21,8 @@ return {
           if on_list(vim.api.nvim_get_current_line()) then
             vim.cmd("MDListItemBelow")
           else
-            vim.cmd("normal! o")
+            local key = vim.api.nvim_replace_termcodes("o", true, false, true)
+            vim.api.nvim_feedkeys(key, "n", false)
           end
         end, opts)
 
@@ -29,7 +30,8 @@ return {
           if on_list(vim.api.nvim_get_current_line()) then
             vim.cmd("MDListItemAbove")
           else
-            vim.cmd("normal! O")
+            local key = vim.api.nvim_replace_termcodes("O", true, false, true)
+            vim.api.nvim_feedkeys(key, "n", false)
           end
         end, opts)
 
