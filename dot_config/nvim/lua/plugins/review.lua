@@ -16,6 +16,11 @@ return {
       vim.g.diffs = {
         fugitive = true,
         neogit = true,
+        highlights = {
+          intra = {
+            enabled = false,
+          },
+        },
       }
     end,
   },
