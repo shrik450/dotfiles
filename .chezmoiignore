@@ -1,9 +1,6 @@
 {{ if ne .chezmoi.os "darwin" }}
-dot_hammerspoon
-dot_config/brew
-dot_config/ghostty
-dot_config/wezterm
-run_onchange_brew-bundle.sh.tmpl
-{{ end }}
-{{ if ne .chezmoi.os "linux" }}
+.hammerspoon
+.config/brew
+.config/ghostty
+.config/wezterm
 {{ end }}
