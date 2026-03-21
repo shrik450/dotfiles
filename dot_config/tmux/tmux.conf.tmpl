@@ -1,12 +1,18 @@
 # --- General ---
 set -g default-terminal "tmux-256color"
+{{ if eq .chezmoi.os "darwin" -}}
 set -ag terminal-overrides ",xterm-ghostty:RGB"
+set -as terminal-features ',xterm-ghostty:extkeys'
+{{ else -}}
+set -ag terminal-overrides ",xterm-256color:RGB"
+set -as terminal-features ',xterm-256color:extkeys'
+set -g set-clipboard on
+{{ end -}}
 set -g mouse on
 set -g history-limit 50000
 set -g escape-time 0
 set -g focus-events on
 set -g extended-keys on
-set -as terminal-features ',xterm-ghostty:extkeys'
 set -g base-index 1
 setw -g pane-base-index 1
 set -g renumber-windows on
@@ -31,8 +37,13 @@ bind [ copy-mode
 bind / copy-mode \; send-keys ?
 bind -T copy-mode-vi v send -X begin-selection
 bind -T copy-mode-vi V send -X select-line
+{{ if eq .chezmoi.os "darwin" -}}
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel "pbcopy"
 bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel "pbcopy"
+{{ else -}}
+bind -T copy-mode-vi y send -X copy-pipe-and-cancel
+bind -T copy-mode-vi Enter send -X copy-pipe-and-cancel
+{{ end -}}
 bind -T copy-mode-vi Escape send -X cancel
 
 # --- fzf Window Switcher: prefix+f ---
@@ -46,7 +57,11 @@ bind f display-popup -E \
 bind F display-popup -E -w 80% -h 80% \
   "tmux capture-pane -pS -50000 \
   | fzf --tac --no-sort --header='Search scrollback (result copied to clipboard)' \
+{{ if eq .chezmoi.os "darwin" -}}
   | pbcopy"
+{{ else -}}
+  | xclip -selection clipboard"
+{{ end -}}
 
 # --- Open URLs / File Paths: prefix+o ---
 bind o display-popup -E -w 80% -h 60% "$HOME/.local/bin/tmux-open-picker"
