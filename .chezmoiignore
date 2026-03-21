@@ -3,4 +3,5 @@
 .config/brew
 .config/ghostty
 .config/wezterm
+brew-bundle.sh
 {{ end }}
