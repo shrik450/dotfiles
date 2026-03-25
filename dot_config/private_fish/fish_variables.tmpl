@@ -1,0 +1,14 @@
+# This file contains fish universal variable definitions.
+# VERSION: 3.0
+{{ if eq .chezmoi.os "darwin" -}}
+SETUVAR --export EDITOR:/opt/homebrew/bin/nvim
+{{ else -}}
+SETUVAR --export EDITOR:/usr/bin/nvim
+{{ end -}}
+SETUVAR __fish_initialized:4300
+{{ if eq .chezmoi.os "darwin" -}}
+SETUVAR fish_user_paths:{{ .chezmoi.homeDir }}/\x2elocal/bin\x1e{{ .chezmoi.homeDir }}/\x2ecargo/bin\x1e/opt/homebrew/bin
+{{ else -}}
+SETUVAR fish_user_paths:{{ .chezmoi.homeDir }}/\x2elocal/bin\x1e{{ .chezmoi.homeDir }}/\x2ecargo/bin
+{{ end -}}
+SETUVAR nvm_default_version:22

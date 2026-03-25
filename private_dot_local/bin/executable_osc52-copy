@@ -1,0 +1,4 @@
+#!/bin/sh
+buf=$(base64 | tr -d "\n")
+tty=$(tmux display-message -p "#{pane_tty}")
+printf "\033]52;c;%s\a" "$buf" > "$tty"
