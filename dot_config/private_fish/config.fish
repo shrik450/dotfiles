@@ -10,3 +10,8 @@ if status is-interactive
 
     fish_add_path "~/.local/bin"
 end
+
+# Added by LM Studio CLI (lms)
+set -gx PATH $PATH /Users/shrik450/.lmstudio/bin
+# End of LM Studio CLI section
+

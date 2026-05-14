@@ -4,9 +4,8 @@ return {
     inlay_hints = { enabled = false },
     servers = {
       basedpyright = {
-        root_dir = function(fname)
-          local util = require("lspconfig.util")
-          return util.find_git_ancestor(fname) or util.root_pattern("pyproject.toml")(fname)
+        root_dir = function(bufnr, on_dir)
+          on_dir(vim.fs.root(bufnr, { ".git", "pyproject.toml" }))
         end,
       },
     },
