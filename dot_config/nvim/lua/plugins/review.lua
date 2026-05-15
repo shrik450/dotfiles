@@ -14,8 +14,10 @@ return {
     "barrettruth/diffs.nvim",
     init = function()
       vim.g.diffs = {
-        fugitive = true,
-        neogit = true,
+        integrations = {
+          fugitive = true,
+          neogit = true,
+        },
         highlights = {
           intra = {
             enabled = false,
