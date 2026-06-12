@@ -109,6 +109,8 @@ end
 
 hs.hotkey.bind({ "Cmd", "Shift" }, "I", ToggleEmacsQuakeMode, "Toggle Emacs Quake Mode")
 
+require("dictation")
+
 -- Config auto reload
 
 function ReloadConfig(files)
