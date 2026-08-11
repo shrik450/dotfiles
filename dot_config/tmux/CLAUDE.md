@@ -34,7 +34,7 @@ so tmux will handle tabs, scrollback, and session management.
 
 - **Prefix key**: `Ctrl+Space`
 - **Tab switching**: `Alt+H` / `Alt+L` (prev/next, no number switching)
-- **Status bar**: Powerline-style, GitHub Dark color palette
+- **Status bar**: Powerline-style, GitHub Light color palette
 - **Persistence**: Deferred (tmux-continuum planned for later)
 - **Fuzzy tab switch**: `prefix+f` with fzf popup
 - **Copy mode**: vi-style (hjkl nav, / search, v select, y yank)

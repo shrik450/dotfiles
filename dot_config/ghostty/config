@@ -265,7 +265,7 @@ grapheme-width-method = unicode
 # 
 # Any additional colors specified via background, foreground, palette, etc.
 # will override the colors specified in the theme.
-theme = GitHub Dark
+theme = GitHub Dark Default
 background = #000000
 
 # The foreground and background color for selection. If this is not set, then
@@ -1604,7 +1604,6 @@ gtk-wide-tabs = true
 # 
 # This configuration only has an effect if Ghostty was built with
 # libadwaita support.
-gtk-adwaita = true
 
 # If `true` (default), applications running in the terminal can show desktop
 # notifications using certain escape sequences such as OSC 9 or OSC 777.

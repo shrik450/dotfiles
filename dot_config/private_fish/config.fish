@@ -15,3 +15,10 @@ end
 set -gx PATH $PATH /Users/shrik450/.lmstudio/bin
 # End of LM Studio CLI section
 
+
+# pnpm
+set -gx PNPM_HOME "/Users/shrik450/Library/pnpm"
+if not string match -q -- $PNPM_HOME $PATH
+  set -gx PATH "$PNPM_HOME" $PATH
+end
+# pnpm end

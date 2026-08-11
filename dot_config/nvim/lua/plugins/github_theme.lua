@@ -3,7 +3,7 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "github_light",
+      colorscheme = "github_dark_default",
     },
   },
 }

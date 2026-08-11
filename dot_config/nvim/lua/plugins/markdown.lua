@@ -186,6 +186,15 @@ return {
       end,
     },
   },
+  -- obsidian.nvim handles in-buffer rendering; a second renderer fights it for
+  -- extmarks and leaves todos looking like plain bullets.
+  { "MeanderingProgrammer/render-markdown.nvim", enabled = false },
+  {
+    "zbirenbaum/copilot.lua",
+    opts = {
+      filetypes = { markdown = false },
+    },
+  },
   {
     "stevearc/conform.nvim",
     opts = {
@@ -194,7 +203,19 @@ return {
       },
       formatters = {
         mdformat = {
-          prepend_args = { "--wrap", "80" },
+          command = "uvx",
+          prepend_args = {
+            "--with",
+            "mdformat-gfm",
+            "--with",
+            "mdformat-gfm-alerts",
+            "--with",
+            "mdformat-frontmatter",
+            "mdformat",
+            "--number",
+            "--wrap",
+            "80",
+          },
         },
       },
     },
