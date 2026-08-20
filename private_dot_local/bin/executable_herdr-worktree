@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Worktree picker for herdr, usable from any workspace of the repo.
+# Herdr's built-in worktree actions only run from the repo parent
+# workspace; the CLI's --cwd form works from anywhere, so this resolves
+# the repo root from the current pane's cwd and drives it over the API.
+# Enter on a listed worktree opens/focuses it; ctrl-n (or a query
+# matching nothing) creates a new worktree with the typed branch name.
+set -euo pipefail
+
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || {
+  echo "not inside a git repo"
+  read -rsn1
+  exit 0
+}
+root=${common_dir%/.git}
+
+out=$({
+  printf 'NEW\t\t✚ new worktree\n'
+  herdr worktree list --cwd "$root" --json \
+    | jq -r '.result.worktrees[]
+        | [.path, (.open_workspace_id // ""), "\(.branch // "detached")\(if .open_workspace_id then " (open)" else "" end)"]
+        | @tsv'
+} | fzf --delimiter='\t' --with-nth=3 --reverse --print-query --expect=ctrl-n \
+        --header="Worktrees of ${root##*/} — enter opens, ctrl-n creates typed name, ✚ for a generated branch") || true
+
+query=$(sed -n 1p <<<"$out")
+key=$(sed -n 2p <<<"$out")
+sel=$(sed -n 3p <<<"$out")
+
+if [ "$key" = "ctrl-n" ] && [ -n "$query" ]; then
+  herdr worktree create --cwd "$root" --branch "$query" --focus >/dev/null
+elif [ -n "$sel" ]; then
+  path=$(cut -f1 <<<"$sel")
+  ws=$(cut -f2 <<<"$sel")
+  if [ "$path" = "NEW" ]; then
+    herdr worktree create --cwd "$root" --focus >/dev/null
+  elif [ -n "$ws" ]; then
+    herdr workspace focus "$ws"
+  else
+    herdr worktree open --cwd "$root" --path "$path" --focus >/dev/null
+  fi
+elif [ -n "$query" ]; then
+  herdr worktree create --cwd "$root" --branch "$query" --focus >/dev/null
+fi

@@ -31,7 +31,7 @@ from pathlib import Path
 
 import sounddevice as sd
 
-MODEL = "gemini-3.5-flash-lite"
+MODEL = "gemini-3.7-flash"
 SAMPLE_RATE = 16000
 CHUNK_FRAMES = 1600  # 100 ms per chunk
 KEYCHAIN_SERVICE = "gemini-dictation"

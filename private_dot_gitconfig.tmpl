@@ -1,0 +1,52 @@
+{{ if .work -}}
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = {{ if eq .chezmoi.os "darwin" }}/Applications/1Password.app/Contents/MacOS/op-ssh-sign{{ else }}/opt/1Password/op-ssh-sign{{ end }}
+[commit]
+	gpgsign = true
+[user]
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJfzE77AW282KRj9EPlowO16jYcDITBHuJ3f49Zu+dGL
+	name = Shrikanth Upadhayaya
+	email = shrikanth@allspice.io
+{{ else -}}
+[commit]
+	gpgsign = false
+[user]
+	name = Shrikanth Upadhayaya
+{{- if .personalEmail }}
+	email = {{ .personalEmail }}
+{{- end }}
+{{ end -}}
+[push]
+	autoSetupRemote = true
+[core]
+	excludesfile = {{ .chezmoi.homeDir }}/.gitignore
+	pager = delta
+[pull]
+	rebase = true
+[diff]
+  algorithm = histogram
+  tool = difftastic
+[difftool]
+  prompt = false
+[difftool "difftastic"]
+  cmd = difft "$LOCAL" "$REMOTE"
+[url "git@github.com:"]
+  insteadOf = "https://github.com/"
+[branch]
+  sort = -committerdate
+  autosetuprebase = always
+[merge]
+  conflictstyle = zdiff3
+[fetch]
+  prune = true
+[pager]
+  difftool = true
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

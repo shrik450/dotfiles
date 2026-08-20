@@ -1,62 +1,43 @@
-tap "anomalyco/tap"
-tap "d12frosted/emacs-plus"
-tap "koekeishiya/formulae"
-tap "railwaycat/emacsmacport"
-tap "rvben/rumdl"
-brew "atuin"
-brew "openssl@3"
-brew "bat"
-brew "chezmoi"
-brew "lima"
+# This file applies to macOS only. It lists GUI apps and anything mise cannot
+# install. Shared command-line tools live in .config/mise/config.toml instead.
+
+# --- Shell and editor ---
+brew "fish"
+brew "emacs"
+
+# --- Version and package managers ---
+brew "mise"
+brew "git"
+brew "rustup"
+brew "python@3.12"
+
+# --- Containers and virtual machines ---
 brew "colima"
-brew "gmp"
-brew "coreutils"
+brew "lima"
 brew "docker"
 brew "docker-buildx"
 brew "docker-compose"
-brew "eza"
-brew "fd"
-brew "fish"
-brew "fzf"
-brew "gh"
-brew "git"
-brew "git-delta"
-brew "git-lfs"
-brew "gitui"
-brew "glib"
-brew "unbound"
-brew "gnutls"
-brew "go"
-brew "go-air"
-brew "gum"
-brew "hyperfine"
-brew "jd"
-brew "jj"
-brew "jq"
-brew "just"
-brew "lazygit"
-brew "libyaml"
-brew "xz"
-brew "llm"
-brew "mise"
-brew "neovim"
-brew "postgresql@14", restart_service: :changed
-brew "python@3.12"
-brew "ripgrep"
-brew "rustup"
-brew "starship"
-brew "tmux"
-brew "tokei"
+brew "docker-credential-helper"
+
+# --- Media and documents ---
+brew "ffmpeg"
+brew "poppler"
 brew "unar"
-brew "uv"
+
+# --- GNU command-line and network tools ---
+brew "coreutils"
 brew "wget"
-brew "zellij"
-brew "zoxide"
-brew "anomalyco/tap/opencode"
-cask "codex"
-cask "font-fira-code"
-cask "font-jetbrains-mono"
-cask "font-sf-mono-nerd-font-ligaturized"
+brew "xz"
+brew "unbound"
+
+# --- System libraries ---
+brew "glib"
+brew "gmp"
+brew "gnutls"
+brew "libyaml"
+brew "openssl@3"
+
+# --- Applications ---
 cask "ghostty"
 cask "hammerspoon"
 cask "iterm2"
@@ -64,3 +45,16 @@ cask "kitty"
 cask "monitorcontrol"
 cask "tailscale-app"
 cask "zen"
+
+# --- Command-line applications without a mise package ---
+cask "copilot-cli"
+cask "handy"
+cask "jan"
+cask "lm-studio"
+cask "notion-cli"
+cask "session-manager-plugin"
+
+# --- Fonts ---
+cask "font-fira-code"
+cask "font-jetbrains-mono"
+cask "font-sf-mono-nerd-font-ligaturized"

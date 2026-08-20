@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cd "$HOME/.config/workspaces"
+exec uv run python -m ws.cli "$@"

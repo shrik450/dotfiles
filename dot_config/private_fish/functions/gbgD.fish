@@ -1,7 +1,25 @@
-function gbgD --wraps="LANG=C git branch --no-color -vv | grep \": gone\\]\" | cut -c 3- | awk '\\''{print }'\\'' | xargs git branch -D" --description "alias gbgD LANG=C git branch --no-color -vv | grep \": gone\\]\" | cut -c 3- | awk '\\''{print }'\\'' | xargs git branch -D"
-    set -lx LANG C
+function gbgD --description "Delete local branches whose upstream branch is gone"
+    set -l deletable
+    set -l blocked
 
-    git branch -vv | string match -r ".*: gone\].*" | string trim -l | string replace -r "^\* " "" | string replace -r ' .*$' '' | while read branch
-        git branch -D $branch
+    for line in (git for-each-ref --format='%(refname:short)%09%(upstream:track)%09%(worktreepath)' refs/heads)
+        set -l fields (string split \t -- $line)
+        test "$fields[2]" = '[gone]'; or continue
+
+        if test -z "$fields[3]"
+            set -a deletable $fields[1]
+        else
+            set -a blocked (string join \t -- $fields[1] $fields[3])
+        end
+    end
+
+    for entry in $blocked
+        set -l fields (string split \t -- $entry)
+        echo "Cannot delete $fields[1]: it is checked out in the worktree $fields[2]" >&2
+        echo "Check out another branch there, or remove the worktree, then run gbgD again." >&2
+    end
+
+    if test (count $deletable) -gt 0
+        git branch -D $deletable
     end
 end

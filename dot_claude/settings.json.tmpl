@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1"
+  },
+  "permissions": {
+    "allow": [],
+    "deny": [
+      "EnterWorktree"
+    ],
+    "ask": [],
+    "defaultMode": "auto"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/style-reminder.sh'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash '{{ .chezmoi.homeDir }}/.claude/hooks/herdr-skill-sync.sh'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "enableArtifact": false,
+  "enableWorkflows": false,
+  "workflowKeywordTriggerEnabled": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
+    "mattpocock-skills@claude-plugins-official": true
+  },
+  "outputStyle": "Plain Language",
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "autoMemoryEnabled": false,
+  "showThinkingSummaries": true,
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "autoCompactEnabled": false,
+  "showTurnDuration": true,
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": false,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(rm:-rf *)",
+      "Writes to packages/litesheets/docker-compose.prod.yml"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: AllSpiceIO (GitHub org) — evidenced by remote `github.com:AllSpiceIO/connections-checker.git` and staging remote `staging.allspice.dev:GenAI/connections-checker.git`",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Internal (AllSpiceIO/connections-checker, via gh) — treat as non-public but org-internal, not fully private",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: .env file (gitignored) with keys for Anthropic, Gemini, OpenAI, AllSpice Hub, Digi-Key, Mouser, Google service account, Slack webhook, S3 eval bucket credentials — per .env.example; CI secrets referenced by name only: CLAUDE_CODE_OAUTH_TOKEN, DIGIKEY_CLIENT_ID, DIGIKEY_CLIENT_SECRET, DOCKERHUB_TOKEN, GENAI_EVAL_ALLSPICE_AUTH_TOKEN, GITHUB_TOKEN, SLACK_WEBHOOK_URL",
+      "**Default / protected branches**: `main` (default), `main` protected via active ruleset (via gh)",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Source control**: GitHub (github.com:AllSpiceIO/connections-checker.git) and AllSpice Hub staging (staging.allspice.dev:GenAI/connections-checker.git) — this repo's remotes only",
+      "**Trusted internal domains**: staging.allspice.dev (this repo's staging remote host)",
+      "**Trusted cloud buckets**: allspice-drcy-evals (S3, config-derived — not a confirmed upload destination; uploads of local data still require confirmation)",
+      "**Key internal services**: AllSpice Hub API (via py-allspice library, per ~/.claude/CLAUDE.md)",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: .env and .env.example (API keys/credentials placeholders); packages/litesheets/docker-compose.prod.yml (prod deployment config) — share only with audiences cleared for AllSpiceIO engineering credentials",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: packages/litesheets/docker-compose.prod.yml and any namespace/host/container with `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (AllSpice Hub DRCY AI agent — connections-checker project)",
+      "**Trusted repo**: /Users/shrik450/.herdr/worktrees/connections-checker/jp-supplemental-documents (working directory) and its remotes origin (github.com:AllSpiceIO/connections-checker.git) and hub-staging (staging.allspice.dev:GenAI/connections-checker.git) — internal visibility, so treat as not fully private but not public either; confidential material still requires audience clearance",
+      "**Org-specific CLIs**: herdr (terminal multiplexer/worktree tool, per ~/.claude/CLAUDE.md); py-allspice (AllSpice Hub API client); just, uv (project task runners per README)"
+    ]
+  },
+  "voiceEnabled": true,
+  "feedbackSurveyState": {
+    "lastShownTime": 1754064639331
+  }
+}

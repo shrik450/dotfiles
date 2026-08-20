@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Pick an open GitHub PR and open it as a herdr worktree workspace.
+# Run from anywhere inside the repo. Fork PRs are fetched into a local
+# pr-<N> review branch; same-repo PRs check out the real head branch.
+set -euo pipefail
+
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) \
+  || { echo "not inside a git repo" >&2; exit 1; }
+root=${common_dir%/.git}
+
+sel=$(gh pr list --json number,title,headRefName,isCrossRepository \
+  --template '{{range .}}{{.number}}{{"\t"}}{{.headRefName}}{{"\t"}}{{.isCrossRepository}}{{"\t"}}#{{.number}} {{.title}} [{{.headRefName}}]{{"\n"}}{{end}}' \
+  | fzf --delimiter='\t' --with-nth=4 --reverse --header='Open PR as worktree') || exit 0
+
+num=$(cut -f1 <<<"$sel")
+head_ref=$(cut -f2 <<<"$sel")
+fork=$(cut -f3 <<<"$sel")
+
+if [ "$fork" = "true" ]; then
+  branch="pr-$num"
+  git -C "$root" fetch origin "pull/$num/head:$branch" 2>/dev/null \
+    || git -C "$root" fetch origin "+pull/$num/head:$branch"
+else
+  branch=$head_ref
+  git -C "$root" fetch origin "$branch"
+fi
+
+existing=$(herdr worktree list --cwd "$root" --json \
+  | jq -r --arg b "$branch" '.result.worktrees[] | select(.branch == $b)
+      | [.path, (.open_workspace_id // "")] | @tsv')
+
+if [ -n "$existing" ]; then
+  ws=$(cut -f2 <<<"$existing")
+  if [ -n "$ws" ]; then
+    herdr workspace focus "$ws"
+  else
+    herdr worktree open --cwd "$root" --path "$(cut -f1 <<<"$existing")" --focus >/dev/null
+  fi
+elif git -C "$root" show-ref --quiet "refs/heads/$branch"; then
+  herdr worktree create --cwd "$root" --branch "$branch" --focus >/dev/null
+else
+  herdr worktree create --cwd "$root" --branch "$branch" --base "origin/$branch" --focus >/dev/null
+fi

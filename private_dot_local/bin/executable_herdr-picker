@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Fuzzy jump for herdr: workspaces and agents.
+set -euo pipefail
+
+entries() {
+  herdr workspace list | jq -r '.result.workspaces[]
+    | ["workspace", .workspace_id, "■ \(.label)"] | @tsv'
+  herdr agent list | jq -r '.result.agents[]
+    | ["agent", .terminal_id, "● \(.agent) [\(.agent_status)] \(.cwd | split("/") | last)"] | @tsv'
+}
+
+sel=$(entries | fzf --delimiter='\t' --with-nth=3 --reverse --header='Jump to') || exit 0
+kind=$(cut -f1 <<<"$sel")
+target=$(cut -f2 <<<"$sel")
+
+case "$kind" in
+  workspace) herdr workspace focus "$target" ;;
+  agent) herdr agent focus "$target" ;;
+esac

@@ -1,0 +1,34 @@
+#!/bin/sh
+# Opens a file in a running nvim instance.
+# Usage: e file[:line]
+# Requires nvim to be started with: vim (fish alias adds --listen automatically)
+# Socket is derived from the git repo root, matching the vim fish function.
+
+project="$(basename "$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")")"
+NVIM_SOCKET="${NVIM_SOCKET:-/tmp/nvim-${project}.sock}"
+
+if [ -z "$1" ]; then
+    echo "Usage: e file[:line]"
+    exit 1
+fi
+
+if ! nvim --server "$NVIM_SOCKET" --remote-expr "1" >/dev/null 2>&1; then
+    echo "No nvim server at $NVIM_SOCKET"
+    echo "Start nvim with: nvim --listen $NVIM_SOCKET"
+    exit 1
+fi
+
+input="$1"
+file="${input%%:*}"
+file="$(realpath "$file" 2>/dev/null || echo "$file")"
+
+case "$input" in
+    *:*) rest="${input#*:}"; line="${rest%%:*}" ;;
+    *)   line="" ;;
+esac
+
+if [ -z "$line" ]; then
+    nvim --server "$NVIM_SOCKET" --remote "$file"
+else
+    nvim --server "$NVIM_SOCKET" --remote-send "<Esc>:e +${line} ${file}<CR>"
+fi

@@ -1,0 +1,200 @@
+sandbox_mode = "workspace-write"
+model = "gpt-5.6-luna"
+model_reasoning_effort = "medium"
+personality = "friendly"
+approvals_reviewer = "user"
+
+
+notify = ["/Users/shrik450/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+service_tier = "default"
+
+[projects."/Users/shrik450/Developer/connections-checker-wt/main"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/connections-checker"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/.local/share/chezmoi"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/.config"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/AllSpice_Hub_infrastructure"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/AllSpice_Hub"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Documents/Codex/2026-04-20-do-you-have-the-background-app"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Personal/1ya-trip"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Work/Hiring-GenAI-Intern-2026"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/.local/bin"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Personal/carrel"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Documents/Notes"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/review-tooling"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/pyramid"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Work/Hiring-VP-Software-2026"]
+trust_level = "trusted"
+
+[sandbox_workspace_write]
+writable_roots = ["/Users/shrik450/.cache", "/Users/shrik450/Library/Caches"]
+network_access = false
+
+[notice]
+hide_full_access_warning = true
+hide_gpt5_1_migration_prompt = true
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.2-codex"
+"gpt-5.2" = "gpt-5.2-codex"
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."notion@openai-curated"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[marketplaces.openai-bundled]
+last_updated = "2026-08-17T20:22:36Z"
+source_type = "local"
+source = "/Users/shrik450/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-08-17T20:27:21Z"
+source_type = "local"
+source = "/Users/shrik450/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[desktop]
+ambient-suggestions-enabled = false
+appearanceLightCodeThemeId = "github"
+appearanceDarkCodeThemeId = "github"
+followUpQueueMode = "queue"
+dock-icon-preference = "codex-system"
+dictationDictionary = ["Hayder, Jaiman, DRCY, litesheets, litestar, litestream"]
+
+[desktop.appearanceLightChromeTheme]
+accent = "#0969da"
+contrast = 45
+ink = "#1f2328"
+opaqueWindows = false
+surface = "#ffffff"
+
+[desktop.appearanceLightChromeTheme.fonts]
+
+[desktop.appearanceLightChromeTheme.semanticColors]
+diffAdded = "#1a7f37"
+diffRemoved = "#cf222e"
+skill = "#8250df"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#1f6feb"
+contrast = 60
+ink = "#e6edf3"
+opaqueWindows = false
+surface = "#0d1117"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#3fb950"
+diffRemoved = "#f85149"
+skill = "#bc8cff"
+
+[desktop.open-in-target-preferences]
+global = "ghostty"
+
+[features]
+hooks = true
+js_repl = false
+multi_agent = true
+multi_agent_v2 = true
+
+[agents]
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "high"
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex"
+CODEX_HOME = "/Users/shrik450/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "14e425736668bf21b5b39f2cc022ee8684728617fb5c49f35533c2e349f47193,6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.721.81911"
+SKY_CUA_SERVICE_PATH = "/Users/shrik450/.codex/computer-use/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
+
+[hooks.state]
+
+[hooks.state."/Users/shrik450/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:e45d326a58d7a3a1d4dc2dc01ff16103776c33fd2246417c6d956d4c3f699888"
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "14e425736668bf21b5b39f2cc022ee8684728617fb5c49f35533c2e349f47193,6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex"

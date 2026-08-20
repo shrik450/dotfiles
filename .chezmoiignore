@@ -1,7 +1,22 @@
+# This file is a template, so the OS checks in it work.
+
+# Repository files that chezmoi must not copy to the home directory.
+README.md
+
+# Build artifacts that must never enter the source state.
+**/__pycache__
+**/.ruff_cache
+**/.DS_Store
+
 {{ if ne .chezmoi.os "darwin" }}
+# These tools run on macOS only.
 .hammerspoon
 .config/brew
 .config/ghostty
 .config/wezterm
-brew-bundle.sh
+{{ end }}
+
+{{ if ne .chezmoi.os "linux" }}
+# This directory applies to Linux only.
+.config/packages
 {{ end }}

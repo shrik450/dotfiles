@@ -1,0 +1,9 @@
+{{/* Work machines sign commits with the 1Password SSH key and use the work
+     email. Every other machine does not sign commits and uses the personal email. */}}
+{{- $work := eq .chezmoi.hostname "Shrikanths-AllSpice-MacBook-Pro" -}}
+{{- $work = promptBoolOnce . "work" "Is this an AllSpice work machine?" $work -}}
+{{- $personalEmail := promptStringOnce . "personalEmail" "Personal Git email" "shrik450@gmail.com" -}}
+
+[data]
+    work = {{ $work }}
+    personalEmail = {{ $personalEmail | quote }}

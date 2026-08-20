@@ -1,0 +1,12 @@
+{{ if eq .chezmoi.os "darwin" -}}
+# PaperWM.spoon is a third-party spoon. This entry downloads it instead of
+# storing a copy in this repository. To update it, change the commit in the
+# url field to the one you want:
+#   https://github.com/mogenson/PaperWM.spoon/commits/main
+[".hammerspoon/Spoons/PaperWM.spoon"]
+    type = "archive"
+    url = "https://github.com/mogenson/PaperWM.spoon/archive/8a7ab83.tar.gz"
+    exact = true
+    stripComponents = 1
+    refreshPeriod = "168h"
+{{ end -}}

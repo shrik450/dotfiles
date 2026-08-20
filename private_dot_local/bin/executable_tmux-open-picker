@@ -1,0 +1,24 @@
+#!/bin/sh
+# Extracts URLs and file paths from tmux pane, picks one with fzf, opens it.
+# URLs open in browser, file paths open in nvim via e.
+
+pane_content="$(tmux capture-pane -pJS -5000)"
+
+urls="$(echo "$pane_content" | grep -oE 'https?://[^][[:space:]"'"'"'<>{}|\\^`]+' | sed 's/[.,;:!?)]*$//' | sort -ru)"
+
+paths="$(echo "$pane_content" | grep -oE '[-a-zA-Z0-9_./@]+\.[a-zA-Z0-9]{1,10}(:[0-9]+(:[0-9]+)?)?' | sort -u | while IFS= read -r f; do
+    clean="${f%%:*}"
+    [ -e "$clean" ] && echo "$f"
+done)"
+
+selection="$(
+    { [ -n "$urls" ] && echo "$urls"; [ -n "$paths" ] && echo "$paths"; } \
+    | fzf --reverse --header='Open URL or file path'
+)"
+
+[ -z "$selection" ] && exit 0
+
+case "$selection" in
+    http*) open "$selection" ;;
+    *) "$HOME/.local/bin/e" "$selection" ;;
+esac

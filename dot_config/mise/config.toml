@@ -1,9 +1,89 @@
+# Tools that mise installs on both macOS and Linux.
+# Anything mise cannot install belongs in .config/brew/Brewfile on macOS, or in
+# .config/packages/linux.txt on Linux. See the README in the chezmoi source
+# directory.
+
 [tools]
-ruby = "3.3"
-node = "latest"
+
+# --- Language runtimes ---
 elixir = "1.16"
 erlang = "26"
+go = "latest"
+node = "latest"
+ocaml = "5.2.0"
 python = "latest"
+ruby = "3.3"
+
+# --- Shell and terminal ---
+atuin = "latest"
+starship = "latest"
+tmux = "latest"
+zellij = "latest"
+zoxide = "latest"
+
+# --- File and text tools ---
+bat = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+jq = "latest"
+jd = "latest"
+ripgrep = "latest"
+tokei = "latest"
+yt-dlp = "latest"
+
+# --- Git ---
+delta = "latest"
+gh = "latest"
+git-lfs = "latest"
+gitui = "latest"
+jj = "latest"
+lazygit = "latest"
+
+# --- Development ---
+air = "latest"
+direnv = "latest"
+gum = "latest"
+hyperfine = "latest"
+just = "latest"
+neovim = "latest"
+uv = "latest"
+
+# --- Cloud and agents ---
+awscli = "latest"
+chezmoi = "latest"
+herdr = "latest"
+opencode = "latest"
+
+# --- Go tools ---
+"go:github.com/philips-software/gino-keva" = "latest"
+"go:github.com/google/go-licenses" = "latest"
+"go:golang.org/x/tools/gopls" = "latest"
+"go:honnef.co/go/tools/cmd/staticcheck" = "latest"
+lefthook = "latest"
+
+# --- Rust tools ---
+"cargo:cargo-sort" = "latest"
+"cargo:evcxr_jupyter" = "latest"
+"cargo:rustlings" = "latest"
+
+# --- Python tools ---
+"pipx:aider-chat" = "latest"
+"pipx:basedpyright" = "latest"
+"pipx:fractured-json" = "latest"
+"pipx:llm" = "latest"
+"pipx:mdformat" = { version = "latest", uvx_args = "--with mdformat-frontmatter --with mdformat-gfm --with mdformat-gfm-alerts" }
+ruff = "latest"
+ty = "latest"
+
+# --- Node tools ---
+cspell = "latest"
+pnpm = "latest"
+prettier = "latest"
+"npm:@earendil-works/pi-coding-agent" = "latest"
+"npm:@musistudio/claude-code-router" = "latest"
+"npm:corepack" = "latest"
+"npm:pyright" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]

@@ -1,0 +1,47 @@
+# This file lists the Debian and Ubuntu packages. Install them with:
+#   sudo apt install $(grep -v '^#' ~/.config/packages/linux.txt | grep -v '^$')
+#
+# This file is the Linux equivalent of .config/brew/Brewfile. It does not list
+# the shared command-line tools, because mise installs those from
+# .config/mise/config.toml.
+#
+# The apt repositories do not include mise. Install it from the official
+# repository first:
+#   https://mise.jdx.dev/installing-mise.html#apt
+
+# --- Shell and editor ---
+fish
+emacs
+
+# --- Version control ---
+git
+
+# --- Containers ---
+docker.io
+docker-buildx
+docker-compose-v2
+
+# --- Media and documents ---
+ffmpeg
+poppler-utils
+unar
+
+# --- Network tools ---
+wget
+xz-utils
+unbound
+
+# --- Build tools that mise needs to compile Ruby and Python ---
+build-essential
+autoconf
+pkg-config
+
+# --- System libraries ---
+libssl-dev
+libgmp-dev
+libglib2.0-dev
+libgnutls28-dev
+libyaml-dev
+libffi-dev
+libreadline-dev
+zlib1g-dev

@@ -15,7 +15,7 @@ local WORDS_FILE = os.getenv("HOME") .. "/.hammerspoon/dictation_words.txt"
 local LAST_WAV = os.getenv("HOME") .. "/.cache/gemini-dictation/last.wav"
 local MAX_ENTRY_LENGTH = 200
 
-local MODELS = { "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview" }
+local MODELS = { "gemini-3.7-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash" }
 local THINKING = { "low", "high", "auto" }
 
 local model = hs.settings.get("dictation.model") or MODELS[1]
