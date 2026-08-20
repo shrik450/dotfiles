@@ -6,12 +6,9 @@
 [tools]
 
 # --- Language runtimes ---
-elixir = "1.16"
-erlang = "26"
 go = "latest"
 node = "latest"
 python = "latest"
-ruby = "3.3"
 
 # --- Shell and terminal ---
 atuin = "latest"
@@ -67,7 +64,6 @@ lefthook = "latest"
 "cargo:rustlings" = "latest"
 
 # --- Python tools ---
-"pipx:aider-chat" = "latest"
 "pipx:basedpyright" = "latest"
 "pipx:fractured-json" = "latest"
 "pipx:llm" = "latest"
@@ -80,9 +76,6 @@ cspell = "latest"
 pnpm = "latest"
 prettier = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
-"npm:@musistudio/claude-code-router" = "latest"
-"npm:corepack" = "latest"
-"npm:pyright" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
