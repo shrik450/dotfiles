@@ -3,7 +3,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
 SETUVAR --export EDITOR:/opt/homebrew/bin/nvim
 {{ else -}}
-SETUVAR --export EDITOR:/usr/bin/nvim
+SETUVAR --export EDITOR:{{ .chezmoi.homeDir }}/.local/share/mise/shims/nvim
 {{ end -}}
 SETUVAR __fish_initialized:4300
 {{ if eq .chezmoi.os "darwin" -}}
