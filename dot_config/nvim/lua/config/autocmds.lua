@@ -6,3 +6,14 @@
 --
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+
+-- LazyVim soft wraps markdown. mdformat already hard wraps it, so soft wrap
+-- only adds display breaks: a link's URL makes the raw line longer than the
+-- window even when the concealed line fits.
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("markdown_nowrap", { clear = true }),
+  pattern = "markdown",
+  callback = function()
+    vim.opt_local.wrap = false
+  end,
+})

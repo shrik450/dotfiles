@@ -93,6 +93,7 @@ next_tab = "alt+l"
 close_tab = "prefix+x"
 # rename_pane = "prefix+shift+p"
 edit_scrollback = "prefix+["
+copy_mode = 'prefix+\'
 # focus_pane_left = "prefix+h"
 # focus_pane_down = "prefix+j"
 # focus_pane_up = "prefix+k"

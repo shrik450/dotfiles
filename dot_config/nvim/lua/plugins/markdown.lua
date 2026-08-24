@@ -211,6 +211,8 @@ return {
             "mdformat-gfm-alerts",
             "--with",
             "mdformat-frontmatter",
+            "--with",
+            vim.fn.stdpath("config") .. "/local/mdformat-displaywrap",
             "mdformat",
             "--number",
             "--wrap",
