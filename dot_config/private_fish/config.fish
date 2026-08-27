@@ -1,7 +1,8 @@
+# Must come first: activates mise-managed tools (atuin, starship, zoxide) onto PATH
+mise activate fish | source
+
 if status is-interactive
     # Commands to run in interactive sessions can go here
-    # Must come first: activates mise-managed tools (atuin, starship, zoxide) onto PATH
-    mise activate fish | source
 
     atuin init fish | source
 
