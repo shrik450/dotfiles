@@ -1,0 +1,26 @@
+# Personal dictionary for gemini_dictate.py.
+#
+# One entry per line. Lines starting with # and blank lines are ignored.
+#
+#   Word            a spelling to always prefer, e.g. AllSpice
+#   heard -> Word   a correction rule: when Gemini hears the left side,
+#                   it must write the right side, e.g. no ERC -> NoERC
+#
+# Add entries from the Hammerspoon menubar, or with ⌥⇧D to add the clipboard.
+
+Hammerspoon
+Anthropic
+Shrikanth
+Hayder
+Jaiman
+DRCY
+AllSpice
+GenAI
+crysknife
+NoERC
+
+For what it's worth -> FWIW
+As far as I can tell -> AFAICT
+
+herdr
+Pyramid

@@ -1,3 +1,20 @@
+#!/usr/bin/env bash
+# chezmoi manages only the keys in the $managed object below. It merges them
+# into whatever Claude Code has already written to ~/.claude/settings.json and
+# leaves every other key alone. Keys that change often, such as "model" and
+# "feedbackSurveyState", stay local and never enter the repo.
+#
+# chezmoi passes the current file on stdin and writes this script's stdout to
+# the file. Arrays and scalars in $managed replace their local counterparts.
+set -euo pipefail
+
+current=$(cat)
+if [ -z "${current//[[:space:]]/}" ]; then
+    current='{}'
+fi
+
+managed=$(
+    cat <<'JSON'
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
@@ -11,7 +28,6 @@
     "ask": [],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -69,6 +85,7 @@
     "enabled": true,
     "mode": "hold"
   },
+  "voiceEnabled": true,
   "autoMemoryEnabled": false,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
@@ -77,6 +94,12 @@
   "showTurnDuration": true,
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": false,
+  "includeCoAuthoredBy": false,
+  "attribution": {
+    "sessionUrl": false,
+    "commit": "",
+    "pr": ""
+  },
   "autoMode": {
     "soft_deny": [
       "$defaults",
@@ -108,9 +131,9 @@
       "**Trusted repo**: /Users/shrik450/.herdr/worktrees/connections-checker/jp-supplemental-documents (working directory) and its remotes origin (github.com:AllSpiceIO/connections-checker.git) and hub-staging (staging.allspice.dev:GenAI/connections-checker.git) — internal visibility, so treat as not fully private but not public either; confidential material still requires audience clearance",
       "**Org-specific CLIs**: herdr (terminal multiplexer/worktree tool, per ~/.claude/CLAUDE.md); py-allspice (AllSpice Hub API client); just, uv (project task runners per README)"
     ]
-  },
-  "voiceEnabled": true,
-  "feedbackSurveyState": {
-    "lastShownTime": 1754064639331
   }
 }
+JSON
+)
+
+printf '%s' "$current" | jq --argjson managed "$managed" '. * $managed'
