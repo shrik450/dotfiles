@@ -76,6 +76,7 @@ cspell = "latest"
 pnpm = "latest"
 prettier = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
+bun = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]
