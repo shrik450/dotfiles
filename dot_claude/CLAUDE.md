@@ -42,6 +42,36 @@ What this means in practice:
 
 ## Style
 
+### Comment rules
+
+Comments must never restate something that is obvious from reading the code. In
+most cases, comments are unnecessary. However, when they are required, they
+should be about:
+
+1. Why: the reason why something is being done, especially if that's
+   non-obvious. However, even when describing why, how you phrase it matters:
+
+   E.g. don't
+
+   ```py
+   # Frobnicate foo as bar will fail with a non-frobnicated foo
+   frob_foo = frobnicate(foo)
+   bar(frob_foo)
+   ```
+
+   Do:
+
+   ```py
+   # A non-frobnicated foo will lead to bar raising ValueError as it tries to
+   # defrobincate
+   frob_foo = frobnicate(foo)
+   bar(frob_foo)
+
+   ```
+
+2. Invariants: This is a deeper version of why, but sometimes can be understood
+   as a "what".
+
 ### Language rules
 
 ALL communication MUST adhere to these rules: conversation, explanations,
