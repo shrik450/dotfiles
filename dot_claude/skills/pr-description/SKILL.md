@@ -15,6 +15,10 @@ Write a PR title and body for the current branch's changes. Follow these steps:
    changed).
 3. If there's a ticket ID in the commit messages (e.g. `[ID-XXXX]`), include it
    in the title.
+4. If the branch already has a PR, run
+   `gh pr view --json title,body,isDraft,url`. Treat its description and draft
+   status as source material. Preserve useful context that the diff cannot show
+   unless the user asks for a full rewrite.
 
 ## Style rules
 
@@ -22,12 +26,20 @@ Write a PR title and body for the current branch's changes. Follow these steps:
   otherwise just a short imperative description. No `feat:` or conventional
   commit prefixes. Under 70 characters.
 - **Body**: Casual, direct prose. No markdown headers or template sections.
-  Short numbered/bullet lists are fine for enumerating substantive items (the
-  things a PR adds, reasons for a decision) — never for inventorying files
-  changed. Lead with the problem or motivation in 1-2 sentences, then explain
-  what the change does and why. Write like you're explaining the change to a
-  colleague, not filling out a form. Keep it to a short paragraph or two. Mention
-  testing links or reproduction steps only if relevant.
+  Lead with the problem or motivation in 1-2 sentences. Use a concrete example
+  when it makes the failure mode easier to understand. When several causes
+  produce the problem, explain each cause before describing the fixes.
+- Use a short numbered or bullet list for several substantive fixes, reasons, or
+  examples. Never use one to inventory files. Do not compress a multi-cause or
+  multi-part change until its mechanism becomes unclear.
+- Call out a pre-existing or incidental bug fix separately from the main change.
+  State important limits and remaining failure cases. Do not present a
+  mitigation as a complete fix.
+- Write like you're explaining the change to a colleague, not filling out a
+  form. Keep it concise, but use more than two paragraphs when the causes,
+  distinct fixes, or limits need separate treatment. Mention testing links or
+  reproduction steps only if relevant. Mention draft or review status when the
+  user or an existing PR provides it.
 
 ## What to avoid
 

@@ -77,6 +77,7 @@ pnpm = "latest"
 prettier = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
 bun = "latest"
+glow = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["python"]

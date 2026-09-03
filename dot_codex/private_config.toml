@@ -99,13 +99,14 @@ enabled = true
 [plugins."template-creator@openai-primary-runtime"]
 enabled = true
 
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
-last_updated = "2026-08-17T20:22:36Z"
 source_type = "local"
 source = "/Users/shrik450/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-17T20:27:21Z"
 source_type = "local"
 source = "/Users/shrik450/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -117,9 +118,12 @@ source = "/Users/shrik450/.cache/codex-runtimes/codex-primary-runtime/plugins/op
 ambient-suggestions-enabled = false
 appearanceLightCodeThemeId = "github"
 appearanceDarkCodeThemeId = "github"
-followUpQueueMode = "queue"
+followUpQueueMode = "steer"
 dock-icon-preference = "codex-system"
 dictationDictionary = ["Hayder, Jaiman, DRCY, litesheets, litestar, litestream"]
+enabled-reasoning-efforts = ["low", "medium", "high", "xhigh", "persistent"]
+git-worktree-root = "/Users/shrik450/.herdr/worktrees/"
+preventSleepWhileRunning = true
 
 [desktop.appearanceLightChromeTheme]
 accent = "#0969da"
@@ -171,15 +175,16 @@ startup_timeout_sec = 120
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
 NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/shrik450/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "14e425736668bf21b5b39f2cc022ee8684728617fb5c49f35533c2e349f47193,6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+BROWSER_USE_TINYSKY_ENABLED = "0"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.721.81911"
+BROWSER_USE_CODEX_APP_VERSION = "26.831.21537"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/shrik450/.codex/plugins/cache/openai-bundled/browser/26.831.21537/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/shrik450/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
@@ -189,12 +194,14 @@ args = ["mcp"]
 cwd = "."
 enabled = false
 
+[mcp_servers.cua_repl]
+command = "/Applications/ChatGPT.app/Contents/MacOS/ChatGPT"
+enabled = false
+
 [hooks.state]
 
 [hooks.state."/Users/shrik450/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:e45d326a58d7a3a1d4dc2dc01ff16103776c33fd2246417c6d956d4c3f699888"
 
 [shell_environment_policy.set]
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "14e425736668bf21b5b39f2cc022ee8684728617fb5c49f35533c2e349f47193,6d25aa7656feac858f3a3bdaea5bcbab0dbfd426c9de8e6931ce90c399ee8e4f"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex"
