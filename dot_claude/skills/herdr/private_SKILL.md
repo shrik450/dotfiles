@@ -15,7 +15,7 @@ test "${HERDR_ENV:-}" = 1
 
 If the check fails, say that you are not running inside Herdr and stop. Do not inspect or control the focused Herdr session from outside Herdr.
 
-When the check passes, the `herdr` binary in `PATH` talks to the current session. Use it to inspect neighboring work, create terminal layout, start agents and commands, read output, and wait for state changes.
+When the check passes, the `herdr` binary in `PATH` talks to the current session. Use it to inspect neighboring work, create terminal layout, start agents and commands, and read output.
 
 ## Learn the current CLI
 
@@ -119,23 +119,21 @@ herdr agent start reviewer --kind codex --pane <returned-pane-id> -- <agent-args
 
 A successful `agent start` returns only after Herdr detects the expected agent in the same pane and considers it ready for interactive input. If the agent is blocked during startup, the command returns `agent_not_ready` immediately but keeps the name available for `agent read` and `agent send-keys`. Wait until the agent becomes idle before prompting it. Startup defaults to a 30-second timeout.
 
-Submit work through the agent surface:
+Submit work through the agent surface without waiting:
 
 ```bash
-herdr agent prompt reviewer "Review the current diff and report only actionable findings." --wait --timeout 120000
+herdr agent prompt reviewer "Review the current diff and report only actionable findings. When done, reply to the orchestrator with: herdr agent prompt <caller-pane-id> '<short result>'"
 ```
 
-`agent prompt` honors the pane's live bracketed-paste mode and sends text followed by encoded Enter after a short delay. It rejects an agent already waiting at an approval or question dialog with `agent_blocked` before sending any input. Inspect the blocked UI and ask the user before answering it. For normal agent work, `--wait` is enough: it waits for the first settled `idle`, `done`, or `blocked` state. Do not repeat those defaults with `--until`.
+Before creating the agent pane, get the caller pane ID with `herdr pane current --current`. Put that exact ID in the opening prompt. The delegated agent must send its result back with `herdr agent prompt <caller-pane-id> "<result>"`. This queues a message in the orchestrator even while it works.
 
-A prompt sent from a non-working state must produce an observed lifecycle change within five seconds. Otherwise Herdr returns `agent_prompt_stalled` instead of waiting indefinitely. This wait tracks lifecycle state, not an individual turn; if the agent is already working, completion of the active turn may satisfy it.
+Do not use `agent prompt --wait` or `agent wait` for normal delegated work. Continue your own work or return control to the user. Herdr notifications only alert the human. They do not message the orchestrator and are not a coordination mechanism.
 
-Use `--until` only for a state-specific workflow, such as waiting for an already-running agent to request input:
+`agent prompt` honors the pane's live bracketed-paste mode and sends text followed by encoded Enter after a short delay. It rejects an agent already waiting at an approval or question dialog with `agent_blocked` before sending any input. Inspect the blocked UI and ask the user before answering it.
 
-```bash
-herdr agent wait reviewer --until blocked --timeout 120000
-```
+A prompt sent from a non-working state must produce an observed lifecycle change within five seconds. Otherwise Herdr returns `agent_prompt_stalled`. If an agent becomes blocked, inspect it with `agent get` and `agent read`; do not wait indefinitely.
 
-Without `--until`, standalone `agent wait` uses the same settled-state defaults as `agent prompt --wait`.
+Treat each assignment as one agent lifetime. Do not give a completed agent another task. Start a fresh agent for implementation, review, or fixes. You may send steering messages only while an agent is still working on its current assignment.
 
 Use logical keys for interactive agent UI controls:
 
@@ -151,7 +149,19 @@ herdr agent get reviewer
 herdr agent read reviewer --source recent-unwrapped --lines 120
 ```
 
-If a wait fails or returns `blocked`, inspect `agent get` and `agent read` before deciding what input to send. Use the pane surface only when raw terminal control is intentional.
+If an agent is blocked, inspect `agent get` and `agent read` before deciding what input to send. Use the pane surface only when raw terminal control is intentional.
+
+## Clean up delegated work
+
+Track every agent and pane that you create. After you have read and checked an agent's result, close its pane:
+
+```bash
+herdr pane close <created-pane-id>
+```
+
+Closing the pane stops the agent and removes the terminal. Close every implementation, review, and fix pane when its work is no longer needed. If you created a worktree workspace, remove it with `herdr worktree remove --workspace <workspace-id>` only after its changes are integrated or the user says to discard them.
+
+Do not close a pane, workspace, or worktree that you did not create. Do not leave idle agents or extra panes behind.
 
 ## Run an ordinary command in another pane
 
@@ -187,6 +197,10 @@ After that failed read, ask the agent to write its complete response as Markdown
 ## Safety and coordination rules
 
 - Use `--no-focus` for background work unless the user asked to switch context.
+- Delegate without `--wait`; require the agent to message the caller pane with `herdr agent prompt` when done.
+- Do not use Herdr notifications for agent coordination.
+- Use a fresh agent for each task. Only steer an agent that is still working on that task.
+- Close every agent pane you created after you check its result.
 - Use `--current`, an explicit pane ID, or a unique agent name. Do not rely on another client's focused pane.
 - Parse IDs from JSON responses. Do not derive them from sidebar order or examples.
 - Do not close workspaces, tabs, panes, or sessions you did not create unless the user explicitly asked.
