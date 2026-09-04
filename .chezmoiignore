@@ -3,6 +3,24 @@
 # Repository files that chezmoi must not copy to the home directory.
 README.md
 
+# Machine-local files that stay on the machine that needs them.
+.config/fish/functions/logs.fish
+
+# The homeserver deploy platform. It lives in its own git repo at ~/.config,
+# so chezmoi must not manage or copy any of it. Keep this list in step with
+# the service directories named in ~/.config/.gitignore.
+.config/.gitignore
+.config/README.md
+.config/beszel
+.config/caddy
+.config/commonplace
+.config/devdeploy
+.config/hooks
+.config/pocket-id
+.config/tinyauth
+.config/victorialogs
+.config/webterm
+
 # Build artifacts that must never enter the source state.
 **/__pycache__
 **/.ruff_cache
