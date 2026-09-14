@@ -1,8 +1,8 @@
 sandbox_mode = "workspace-write"
-model = "gpt-5.6-luna"
-model_reasoning_effort = "medium"
+model = "gpt-6-astra"
+model_reasoning_effort = "xhigh"
 personality = "friendly"
-approvals_reviewer = "user"
+approvals_reviewer = "auto_review"
 
 
 notify = ["/Users/shrik450/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
@@ -51,6 +51,12 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/shrik450/Work/Hiring-VP-Software-2026"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/biot"]
+trust_level = "trusted"
+
+[projects."/Users/shrik450/Developer/ficus"]
 trust_level = "trusted"
 
 [sandbox_workspace_write]
@@ -102,6 +108,9 @@ enabled = true
 [plugins."codex-app-tools@openai-bundled"]
 enabled = true
 
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
 source_type = "local"
 source = "/Users/shrik450/.codex/.tmp/bundled-marketplaces/openai-bundled"
@@ -110,9 +119,14 @@ source = "/Users/shrik450/.codex/.tmp/bundled-marketplaces/openai-bundled"
 source_type = "local"
 source = "/Users/shrik450/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
+[tui]
+status_line = ["model-with-reasoning", "run-state", "weekly-limit", "total-output-tokens", "estimated-thread-cost"]
+status_line_use_colors = true
+
 [tui.model_availability_nux]
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
+gpt-6-astra = 4
 
 [desktop]
 ambient-suggestions-enabled = false
@@ -178,13 +192,13 @@ NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/shrik450/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/shrik450/.codex"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
-BROWSER_USE_TINYSKY_ENABLED = "0"
-NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
-NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
-NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.831.21537"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/shrik450/.codex/plugins/cache/openai-bundled/browser/26.831.21537/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.903.61454"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/shrik450/.codex/plugins/cache/openai-bundled/browser/26.903.61454/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/shrik450/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
@@ -192,10 +206,6 @@ CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
 args = ["mcp"]
 cwd = "."
-enabled = false
-
-[mcp_servers.cua_repl]
-command = "/Applications/ChatGPT.app/Contents/MacOS/ChatGPT"
 enabled = false
 
 [hooks.state]

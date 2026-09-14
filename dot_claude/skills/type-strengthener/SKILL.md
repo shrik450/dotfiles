@@ -1,456 +1,550 @@
 ---
 name: type-strengthener
-description: Audits Python type coverage and recommends local and system-wide ways to make more errors detectable by a type checker. Uses mutation testing to prove where types fail to protect future edits. Finds practical opportunities to model domain rules, preserve type relationships, validate boundaries, and make invalid states harder to express. Groups related findings to expose design causes, such as repeated parsing or weak data structures that flow through many layers. Use for Python type-safety reviews, typing improvements, `Any` usage, dynamic access, string-based dispatch, weak domain models, refactor safety, type checker coverage, and pull request reviews about stronger types.
+description: Audits Python type safety and finds practical changes that let the project's type checker catch more errors. Uses targeted mutations to test whether types protect consumers after plausible edits. Reviews `Any`, casts, dynamic access, weak domain models, lost type relationships, boundary validation, checker coverage, and related system design. Use for Python type-safety reviews, typing improvements, refactor safety, and pull request reviews that focus on stronger types.
 ---
 
 # Type strengthener
 
-Audit the code for type erosion, then find practical ways to make more errors detectable by types. Produce recommendations only. Do not edit the target code unless the user asks you to apply them.
+Audit Python code to find errors that stronger types could catch before runtime. Recommend changes, but don't edit the target code unless the user asks you to apply them.
 
-Form an initial view of the code before you read the [type-strengthening hints](references/hints.md). After you map the project's supported Python and checker versions, read the [current typing research guide](references/current-typing.md). Use both references to choose more places to inspect. They do not define or limit the audit.
+Start by reading the target code. Don't read the [inspection hints](references/hints.md) until you understand the project's important data flows and domain rules. After you identify the supported Python and checker versions, read the [current typing research guide](references/current-typing.md).
 
-Do not rely on memory for the availability or semantics of a typing feature. Confirm the current typing specification, runtime availability, backport availability, and configured checker support. Run a minimal positive and negative example with the project's checker before you recommend a feature whose behavior is central to a finding.
+Don't rely on memory for typing feature support. Check the current specification, runtime availability, backport availability, configured checker support, and runtime annotation consumers. If a recommendation depends on a typing feature, test a valid and invalid example with the project's checker.
 
 ## Goal
 
-Maximize the share of plausible future errors that fail during type checking instead of at runtime.
+Increase the number of plausible programming errors that the project's type checker rejects.
 
-Use two forms of evidence:
+Use these internal evidence categories:
 
-- **Proven erosion:** A plausible edit makes the code wrong, but the configured type checker reports no error at an affected consumer.
-- **Strengthening opportunity:** The code permits a specific class of mistake that a practical type design would reject.
+- **Demonstrated checker gap:** A plausible code change breaks a consumer, but the configured checker doesn't report an error at that consumer.
+- **Type improvement:** The current type accepts a specific mistake that a practical type design would reject.
 
-Keep these forms separate. Erosion requires a demonstrated silent break. A strengthening opportunity requires a concrete error that the proposed type would catch.
+Keep the categories separate while you audit. A demonstrated checker gap requires an executed mutation or a clear manual trace. A type improvement requires a concrete accepted mistake and a type design that rejects it.
 
-## Core principles
+Use the reader-facing evidence labels from [Report format](#report-format) in the final report. Don't require the reader to learn the audit's internal taxonomy.
 
-### Test the edit space
+## Key principles
 
-Do not audit by matching the code against the examples in this skill. Python offers many ways to lose a type guarantee, including mechanisms that have no established name.
+### Test changes, not patterns
 
-Start from the code's data flows, invariants, state changes, and public interfaces. Invent plausible mistakes and future edits for that system. Then test whether the checker rejects them.
+Start with the code's promises about data, states, and interfaces. Invent likely mistakes that violate those promises, and test whether the checker rejects them.
 
-Use the listed edit classes and hints only to expand this investigation. They are examples, not a coverage standard. An audit is not complete because every listed pattern has been checked.
+The mutation classes and inspection hints provide ideas. They don't define complete coverage. Python can lose type information through mechanisms that have no common name.
 
-Describe a new problem in plain language when no known term fits it. Do not discard a problem because you cannot name its pattern or type construct immediately.
+Describe an unfamiliar problem in plain language. Don't discard it because you can't name a known pattern or typing feature.
 
-### Check the verification surface first
+### Confirm what the checker covers
 
-An annotation only protects code when the project's checker reads it and blocks the change. Excluded files, ignored modules, weak diagnostic settings, and nonblocking continuous integration checks can create verification gaps.
+An annotation protects code only when the project checks that code and treats checker errors as failures. Excluded paths, ignored modules, weak diagnostics, and nonblocking continuous integration (CI) jobs create gaps.
 
-Identify the checker and command that the project actually uses. Inspect project configuration, dependency files, task definitions, developer documentation, and continuous integration. The checker might be Pyright, basedpyright, ty, or another tool. Do not introduce or recommend a different checker when the project already has one.
+Find the checker and exact command that the project uses. Read its configuration, dependency files, task definitions, developer documentation, and CI workflows. Use the existing checker instead of introducing another one.
 
-Confirm what the project checks before you interpret a lack of checker errors.
+When coverage is uncertain, add a deliberate invalid assignment to a temporary copy. Confirm that the normal checker command reports it.
 
-### Validate boundaries once
+### Validate external data at one boundary
 
-Untyped data must enter through boundaries such as JSON, environment variables, database rows, plugins, and untyped libraries. The boundary is not a defect.
+External data commonly enters as JSON, environment variables, database rows, plugin values, or values from untyped libraries. Its lack of a trusted type isn't itself a defect.
 
-Prefer one parse and validation point that returns a trusted domain type. When several consumers independently guess the same data shape, report the missing shared boundary.
+Prefer one parser or validator that converts the external value into a trusted domain type. If several consumers guess or validate the same shape, report the missing shared boundary.
 
-### Strengthen types with purpose
+### Recommend types that prevent named errors
 
-Do not suggest a type only because Python supports it. Name the error that the type prevents. Prefer the smallest design that catches the error without making normal changes harder.
+Don't recommend a type only because Python supports it. State the exact mistake that the type prevents. Prefer the smallest design that catches the mistake without making common changes harder.
 
-Start with a practical local fix. Then check whether the local fix treats a symptom of a system design problem.
+Check whether a local fix addresses only one symptom of a wider design problem. Keep useful local fixes even when you also recommend a system-wide change.
 
-### Consider system design
+### Recommend system changes when they add protection
 
-Recommend a system design change when it provides a material improvement over local typing fixes. The change can cross modules, layers, or public interfaces. Do not reduce the recommendation to local edits because a larger change is difficult.
+A system change can cross modules, layers, or public interfaces. Recommend one when shared ownership or data flow causes weak types across the system.
 
-Keep the local fixes in the report. The reader might not control the wider design or might need an immediate improvement. Present the local and system-wide options together, and explain the extra errors that the system design would catch.
+State the migration cost directly. Don't reduce a useful recommendation to local edits only because the larger change costs more. Don't propose a broad rewrite without a shared cause, a clear owner, and additional errors that the new design would catch.
 
-Do not propose a broad rewrite only because several files need edits. A system design recommendation needs a shared cause, a clear ownership boundary, and a stronger type guarantee.
-
-## Procedure
+## Audit procedure
 
 ### 1. Define the scope
 
-Identify the files, branch, pull request, or package to review. Exclude tests, fixtures, generated code, third-party stubs, and vendored code unless the user includes them.
+Identify the files, branch, pull request, or package under review. Exclude tests, fixtures, generated code, third-party stubs, and vendored code unless the user includes them.
 
-Record the minimum and maximum supported Python versions. Record the checker name and exact version, its configured target Python version, and the `typing_extensions` version and support policy. Check whether frameworks or libraries inspect annotations at runtime. A recommendation must work across this support range.
+Record:
 
-### 2. Map the verification surface
+- The minimum and maximum supported Python versions
+- The checker name, exact version, configured Python target, and normal command
+- The supported `typing_extensions` version and import policy
+- Any framework or library that reads annotations at runtime
 
-Read the checker configuration and continuous integration configuration. Check these items:
+A recommendation must work across this support range.
 
-- The checker and version.
-- The paths that the checker includes and excludes.
-- Strictness settings and module-specific overrides.
-- Import handling, missing stub behavior, and `Any` reporting.
-- Untyped function and decorator handling.
-- Suppressions, including module-level and broad ignores.
-- Whether continuous integration runs the checker and blocks merges on failure.
+### 2. Map checker coverage
 
-Verify that the checker reads each area that you test. Inject a clear type error in a temporary copy when checker behavior is uncertain.
+Read the checker and CI configuration. Confirm:
 
-Report verification gaps before local findings. Don't treat a lack of checker errors from an unchecked file or failed checker as proof of safety.
+- Which paths the checker includes and excludes
+- Which strictness settings and module overrides apply
+- How the checker handles imports, missing stubs, and `Any`
+- How it handles untyped functions, decorators, and base classes
+- Which file-level and module-level suppressions apply
+- Whether CI runs the checker and blocks merges when it fails
+
+Test uncertain coverage with a deliberate invalid assignment in a temporary copy. Report coverage gaps before code-level findings.
+
+A clean result from an unchecked file or failed checker run isn't evidence of type safety.
 
 ### 3. Build the typing capability profile
 
-Build this profile before you select type constructs:
+Answer these questions before you choose typing features:
 
-- The oldest Python parser that must accept the source.
-- The `typing` features available at runtime on every supported Python version.
-- The features that the project's supported `typing_extensions` version backports.
-- The features and semantics implemented by the configured checker version.
-- Frameworks, serializers, dependency injection tools, or other code that reads annotations at runtime.
-- Whether the project can use newer syntax while supporting an older runtime through compilation or another build step.
+1. Can the oldest supported Python version parse the syntax?
+2. Does `typing` or the supported `typing_extensions` version provide the runtime object?
+3. Does the configured checker implement the required behavior?
+4. Do frameworks and other runtime annotation consumers accept it?
 
-For every recent or uncertain feature under consideration, check these sources in order:
+Also check whether a build step lets the project use syntax that its oldest runtime can't parse directly.
 
-1. The current [Python typing specification](https://typing.python.org/en/latest/spec/).
-2. The documentation for each relevant Python version.
-3. The [`typing_extensions` documentation](https://typing-extensions.readthedocs.io/).
-4. The configured checker's documentation and release notes.
+For recent or uncertain features, use these sources in order:
 
-Use the typing specification for current static semantics. Use Python documentation for syntax and runtime availability. Use a PEP to understand design history, not as the sole source for current behavior.
+1. The current [Python typing specification](https://typing.python.org/en/latest/spec/)
+2. The documentation for each supported Python version
+3. The [`typing_extensions` documentation](https://typing-extensions.readthedocs.io/)
+4. The configured checker's documentation and release notes
 
-Keep four support questions separate:
+Use a Python Enhancement Proposal (PEP) for design history, not as the only source for current behavior.
 
-1. Can the oldest supported Python parse the syntax?
-2. Does `typing` or the supported `typing_extensions` version provide the runtime name?
-3. Does the configured checker implement the needed semantics?
-4. Will runtime annotation consumers accept the form?
-
-If you cannot verify one of these points, use a verified older construct or label the recommendation as unverified. Do not present an assumed feature matrix as fact.
-
-Read [the current typing research guide](references/current-typing.md) after you complete this profile.
+If you can't verify a support layer, use an older verified construct or mark the recommendation as unverified. Then read the [current typing research guide](references/current-typing.md).
 
 ### 4. Map the domain model
 
-List the types that carry domain meaning:
+List the types and interfaces that carry domain meaning:
 
-- Dataclasses, `TypedDict` definitions, validation models, and named tuples.
-- Enums, literal unions, tagged unions, and class hierarchies.
-- `NewType` definitions and value objects.
-- Protocols, generic types, and callable interfaces.
-- Public functions, constructors, adapters, and serialization boundaries.
+- Dataclasses, named tuples, `TypedDict` definitions, and validation models
+- Enums, literal unions, tagged unions, and class hierarchies
+- `NewType` definitions and value objects
+- Protocols, generic types, and callable interfaces
+- Public functions, constructors, adapters, parsers, and serializers
 
-Map the code without consulting the hint list first. Trace important values across boundaries and layers. Write down failure hypotheses based on the system's actual behavior.
+Trace important values as they enter the system, change shape, become trusted, and reach consumers. Write failure hypotheses based on the system's behavior before you consult the hint list.
 
-Then run the discovery command as another source of mutation targets:
+Run discovery to find more mutation targets:
 
 ```bash
-uv run scripts/mutate.py discover --root <path>
+uv run <skill-path>/scripts/mutate.py discover --root <project-path>
 ```
 
-The script does not discover every dynamic connection or strengthening opportunity. Continue the audit when the script finds nothing.
+Replace `<skill-path>` with this skill's directory. The script finds selected mutation targets only. Continue the audit when it finds none.
 
 ### 5. Test plausible edits
 
-Use the following edit classes as initial examples for important domain types and public functions. Add mutations based on the code's own behavior.
+Start with important domain types and public functions. Test code-specific edits first, then use these examples to expand coverage:
 
-| Edit class | Question |
+| Edit | What to inspect |
 |---|---|
-| Rename a field, method, or parameter | Which consumers use a checker-visible name? Which use a string, mapping key, reflection, or `**kwargs`? |
-| Change a field or parameter type | Does each consumer retain the type, or does `Any`, an unchecked cast, or a bare container erase it? |
-| Delete a field or method | Does a default value, mapping lookup, serializer list, or dynamic call hide the deletion? |
-| Add a closed-set variant | Does dispatch use exhaustive matching and `assert_never`? Does a catch-all branch handle the new case without requiring an update? |
-| Add a required mapping key | Do constructors and adapters know the full `TypedDict` shape? Do untyped mappings hide the new requirement? |
-| Change call parameters | Do decorators, partial calls, `Callable[..., T]`, or untyped keyword mappings hide the signature? |
-| Break a generic relationship | Do consumers depend on an input-output type relationship that the declaration preserves? |
-| Change a tuple shape | Do consumers retain tuple length and element-position information? |
-| Change an override signature | Does the base interface and `override` checking reject the mismatch? |
-| Change a narrowing predicate | Do both branches narrow soundly, including after mutation or aliasing? |
-| Split one primitive into distinct roles | Can the checker distinguish values such as `UserId` and `OrderId`, or are both plain strings? |
-| Move data across a boundary | Does one parser create a trusted type, or does unvalidated data enter domain logic? |
-| Reorder same-typed arguments | Would keyword-only parameters, a value object, or `NewType` prevent an accidental swap? |
+| Rename a field, method, or parameter | Check whether consumers use a typed name or an unchecked string, mapping key, reflection call, or `**kwargs`. |
+| Change a field or parameter type | Check whether consumers preserve the type or lose it through `Any`, a cast, or an untyped container. |
+| Delete a field or method | Check whether defaults, mapping lookups, serializer lists, or dynamic calls hide the deletion. |
+| Add a closed-set variant | Check whether exhaustive matching and `assert_never` require consumers to handle it. |
+| Add a required mapping key | Check whether constructors and adapters know the complete `TypedDict` shape. |
+| Change callable parameters | Check whether decorators, partial calls, `Callable[..., T]`, or untyped keyword mappings hide the signature. |
+| Break a generic relationship | Check whether the declaration preserves the input-output relationship that consumers need. |
+| Change a tuple shape | Check whether consumers retain tuple length and element-position information. |
+| Change an override signature | Check whether the base interface and `override` reject the mismatch. |
+| Change a narrowing predicate | Check both branches, including behavior after mutation or aliasing. |
+| Split a primitive into distinct roles | Check whether the checker can distinguish values such as `UserId` and `OrderId`. |
+| Move data across a boundary | Check whether a parser creates a trusted type before domain logic uses the data. |
+| Swap same-typed arguments | Check whether keyword-only parameters, `NewType`, or a value object prevent the swap. |
 
-Run targeted mutations before broad runs when the scope is large. Use the checker or checker command that the project already uses:
+Run focused mutations before broad runs:
 
 ```bash
-uv run scripts/mutate.py run --root <path> --checker basedpyright \
-  --kind rename --target User.email
-uv run scripts/mutate.py run --root <path> \
+uv run <skill-path>/scripts/mutate.py run --root <project-path> \
+  --checker basedpyright --kind rename --target User.email
+uv run <skill-path>/scripts/mutate.py run --root <project-path> \
   --checker-command "uv run ty check {target}" --json type-mutations.json
 ```
 
-Use `--checker pyright` or `--checker basedpyright` for their JSON output. Use `--checker-command` for another project command. Read `uv run scripts/mutate.py --help` for limits and checker arguments.
+Use `--checker pyright` or `--checker basedpyright` to parse their JSON output. Use `--checker-command` for another project command. Run `uv run <skill-path>/scripts/mutate.py --help` for all options.
 
-The script copies the source tree to a temporary directory. It reports new checker errors and candidate consumer sites that received no error. Its discovery includes selected parameter, literal-alias, `TypedDict`, generic-return, and tuple-shape mutations. Keep the script secondary to code-specific hypotheses and manual probes.
+The script checks a temporary source copy. It reports new checker errors and possible consumer sites with no new error. It can match unrelated symbols that share a name, so verify every reported site before you use it as evidence.
 
-Review every unflagged site. The script collects candidates and can match an unrelated symbol with the same name. Report a site only after you confirm that it consumes the mutated symbol.
+Create manual mutations for important rules and data flows that the script doesn't cover. If no checker is available, trace consumers by hand and label the evidence as reasoned rather than executed.
 
-Create additional mutations from the code's invariants and data flows. Do not limit mutations to the script's supported edit classes.
+Finish with an open-ended pass. Ignore the named patterns and reconstruct the system's promises. Try to violate each important promise while satisfying the annotations.
 
-If no checker is available, trace consumers by hand. Mark the evidence as reasoned, not executed. Do not report a clean result from a failed checker run.
+### 6. Find type improvements
 
-Before you continue, do a separate open-ended pass. Set aside the named patterns and edit classes. Reconstruct what the system promises about its data, states, and interfaces. Try to invent errors that violate those promises while satisfying the written annotations. Investigate any error that the checker accepts, even when you cannot name the mechanism.
+Review important workflows from input to output. Look for a stronger type that can reject an invalid value or preserve a missing relationship.
 
-Do not conclude that the code is strong because searches, hints, and scripted mutations found nothing. Base the conclusion on the important data flows and invariants that you tested.
+#### Separate values with different meanings
 
-### 6. Find type-strengthening opportunities
+Plain values can share a runtime type but represent different roles. Examples include identifiers, units, currencies, paths, and raw versus normalized text.
 
-Review important workflows from input to output. Ask where a stronger type can reject an invalid value or preserve an unexpressed relationship.
+Choose among:
 
-#### Model domain distinctions
+- `NewType` for a low-cost static distinction with no runtime behavior
+- A frozen dataclass or validated value object when construction must enforce rules
+- Keyword-only parameters when positional argument order is the main risk
 
-Look for values with the same runtime type but different meanings. Examples include identifiers, units, currencies, paths, and normalized versus raw text.
+Name the exact mix-up that the change prevents.
 
-Consider these options:
+#### Make invalid states harder to represent
 
-- Use `NewType` for a low-cost distinction with no runtime behavior.
-- Use a frozen dataclass or validated value object when construction must enforce rules.
-- Use keyword-only parameters when the main risk is positional argument order.
+Look for models that permit combinations the domain rejects. Examples include many optional fields, a status plus conflicting flags, or one object that represents several workflow stages.
 
-Name the exact mix-up that the change catches.
+Consider:
 
-#### Make invalid states harder to express
+- A tagged union with a `Literal` discriminator
+- Separate dataclasses for separate states
+- Constructors that require all fields for a valid state
+- A private constructor and typed parser when construction needs runtime validation
 
-Look for models that allow combinations the domain rejects. Common cases include many optional fields, a status plus unrelated flags, or one object that represents several workflow stages.
+Python types don't enforce runtime invariants. State which combinations the checker rejects and which values still need runtime validation.
 
-Consider these options:
+#### Define controlled finite sets
 
-- Use a tagged union with a `Literal` discriminator.
-- Use separate dataclasses for separate states.
-- Require valid fields in constructors instead of setting them later.
-- Use a private constructor and a typed parse function when validation is required.
+Use `Literal` or `Enum` for project-controlled status, mode, and kind values. Use exhaustive `match` statements with `assert_never` when each consumer must handle every value.
 
-Do not claim that Python types enforce runtime invariants. State which invalid combinations the checker rejects and which still need runtime validation.
+Don't close a set that an external system can extend unless the boundary defines how to handle unknown values.
 
-#### Close finite sets
+#### Preserve input-output relationships
 
-Replace free-form status, mode, and kind strings with `Literal` or `Enum` when the set is controlled by the project. Pair closed sets with exhaustive `match` statements and `assert_never`.
+Look for relationships that broad unions or erased generics lose. Examples include mode-dependent return types, element-preserving containers, fixed tuple shapes, and decorators that preserve signatures.
 
-Do not close a set that external systems can extend without a clear unknown-value policy.
+Describe the relationship before you select a construct. Then compare relevant options:
 
-#### Preserve relationships between inputs and outputs
-
-Look for unions that lose useful relationships. Examples include a function whose return type depends on a mode, a container that preserves its element type, a tuple that preserves its shape, or a decorator that preserves a callable signature.
-
-First describe the relationship without naming a type construct. Then compare the current feature families that can express it:
-
-- Use a type parameter for a value that keeps the same type through an operation. Compare legacy `TypeVar` declarations with native type parameter syntax when the project can parse it.
-- Use `@overload` when literal inputs select distinct return types and one generic relationship cannot express the contract.
+- Use a type parameter when an operation preserves a value's type. Compare `TypeVar` with native type parameter syntax when the project supports both.
+- Use `@overload` when literal inputs select distinct return types.
 - Use `ParamSpec` and `Concatenate` for decorators and callable adapters.
-- Consider variadic generics when tuple length, tuple shape, or an arbitrary sequence of type arguments must remain related.
-- Use `Self` for fluent methods and alternate constructors when its subclass behavior matches the contract.
-- Use a callback protocol when named parameters or overloads matter.
-- Consider type parameter defaults and inferred variance only after you verify their semantics and support.
+- Use variadic generics when tuple shape or a sequence of type arguments must stay related.
+- Use `Self` when a method returns the receiver's concrete subclass.
+- Use a callback protocol when parameter names or overloads matter.
+- Consider type parameter defaults and inferred variance only after you verify support and behavior.
 
-Prefer one clear generic relationship over many overlapping overloads. Check bounds, constraints, variance, and defaults separately. Do not treat them as interchangeable.
+Prefer one clear generic relationship over many overlapping overloads. Treat bounds, constraints, variance, and defaults as separate choices.
 
 #### Describe required behavior
 
-Look for functions that accept `object`, a broad base class, or unrelated concrete classes and then probe for attributes.
+Use `Protocol` when a function needs a small structural interface instead of a broad base class or attribute probing. Base the protocol on what consumers use. Don't copy the implementation's full interface.
 
-Use `Protocol` when callers need a small structural interface. Keep protocols small and based on actual consumers. Do not copy a full implementation interface.
-
-Use `TypeIs` or `TypeGuard` only when a function performs the runtime check that justifies narrowing. Do not treat them as interchangeable. Verify the subtype requirement and two-branch narrowing of `TypeIs`. Use the different positive-branch behavior of `TypeGuard` only when the contract needs it. Probe both the true and false branches with the configured checker.
+Use `TypeIs` or `TypeGuard` only when the function performs the runtime check required by its annotation. Compare their subtype and branch-narrowing rules. Test both branches with the configured checker.
 
 #### Give mappings a stable shape
 
-Use `TypedDict` for mappings with known keys, including partial mappings and typed keyword arguments. Consider `Unpack[TypedDict]` when a function accepts a fixed `**kwargs` shape.
+Use `TypedDict` for mappings with known keys. Use `Unpack[TypedDict]` when a function accepts a fixed `**kwargs` shape.
 
-Model key absence separately from a present key whose value can be `None`. Investigate `Required`, `NotRequired`, `ReadOnly`, and current openness controls when they catch the named error. Verify checker and backport support for each qualifier. State whether a read-only guarantee applies only through the declared interface.
+Model a missing key separately from a present key whose value is `None`. Consider `Required`, `NotRequired`, `ReadOnly`, and current openness controls only when they prevent the named error. Verify checker and backport support.
 
-Use a dataclass or validation model when the value has behavior, construction rules, or a long lifetime. Do not replace truly open metadata with a closed shape.
+Use a dataclass or validation model when data has behavior, construction rules, or a long lifetime. Keep truly extensible metadata open.
 
 #### Mark declaration intent
 
-Look for declarations whose intended relationship is not checked directly:
+Consider:
 
-- Use `override` when an accidental rename or signature drift could detach a method from its base declaration.
-- Use `final` when subclassing or reassignment would violate the design.
-- Investigate `dataclass_transform` when a project library generates dataclass-like constructors or fields.
-- Distinguish a type alias from a runtime assignment when that intent affects checking or runtime use.
+- `override` when a rename or signature change could detach a method from its base declaration
+- `final` when subclassing or reassignment violates the design
+- `dataclass_transform` when a project library generates dataclass-like fields or constructors
+- An explicit type alias when the distinction from a runtime assignment affects checking or runtime use
 
-These features describe intent; they do not replace runtime behavior. Verify native alias syntax, decorator availability, generated signatures, checker behavior, and runtime introspection.
+These features describe intent. They don't create runtime behavior. Verify syntax, imports, generated signatures, checker behavior, and runtime introspection.
 
 #### Restrict special strings and type expressions
 
-Consider `LiteralString` only when an API must reject strings that are not literal-derived. It does not validate SQL, shell syntax, HTML, or another language.
+Use `LiteralString` only when an API must reject strings that aren't literal-derived. It doesn't validate SQL, shell syntax, HTML, or another language.
 
-When an API accepts a type expression as data, research the current type-expression annotation features rather than forcing the value into `type[Any]` or `object`. These features are recent. Verify their current specification and full support before recommending them.
+When an API accepts a type expression as data, research current type-expression annotations instead of defaulting to `type[Any]` or `object`. These features are recent, so verify the specification, runtime or backport, and checker support.
 
 #### Contain untyped boundaries
 
-Trace values from JSON, YAML, environment variables, database drivers, plugins, and untyped libraries. Recommend one parse function or validation model that returns a domain type.
+Trace JSON, YAML, environment variables, database values, plugin values, and untyped library results. Put runtime validation in one parser or validation model that returns a trusted domain type.
 
-Use `object` or an unknown input type at the external boundary when needed. Don't cast boundary data to a trusted type without a runtime check.
+Use `object` or an unknown input type at the external edge when needed. Don't cast external data to a trusted type without checking it at runtime.
 
-#### Improve collection and mutation types
+#### Match collection types to behavior
 
-Check whether callers need mutation. Accept `Sequence`, `Mapping`, `Iterable`, or a small protocol when the function only reads. Return a concrete type when callers rely on concrete behavior.
+If a function only reads a collection, consider `Sequence`, `Mapping`, `Iterable`, or a small protocol. Return a concrete type when callers depend on its concrete behavior.
 
-Use immutable domain objects where mutation creates invalid intermediate states. Do not suggest abstract collection types only for style.
+Use immutable domain objects when mutation permits invalid intermediate states. Don't recommend abstract collection types unless they catch a named error.
 
 ### 7. Validate each recommendation
 
-Keep a strengthening opportunity only when all answers are clear:
+Keep a recommendation only when you can answer every relevant question:
 
-1. What plausible error does the current type design permit?
-2. Why does the current checker accept it?
-3. Which type design rejects it?
-4. Why is that design a better semantic match than nearby constructs?
-5. What code boundary owns the change?
-6. What runtime validation remains necessary?
-7. What is the migration cost and compatibility effect?
-8. Can the minimum Python parse it, can the runtime import it, and does the checker support it?
+1. What plausible mistake does the current type accept?
+2. Why does the checker accept it?
+3. Which design rejects it?
+4. Why does that design fit better than nearby choices?
+5. Which code boundary owns the change?
+6. Which runtime checks remain necessary?
+7. What migration and compatibility costs does it add?
+8. Can the oldest Python parse it, can every runtime import it, and does the checker support it?
 9. Do runtime annotation consumers accept it?
 
-For each nontrivial design, create a temporary probe with one valid use that passes and one plausible misuse that fails. Use `assert_type` or `reveal_type` when inferred relationships matter. Run the project's exact checker command. Also run the minimum Python parser or runtime when the syntax or runtime form changes. Exercise the relevant runtime annotation consumer when the project uses one.
+For each nontrivial design, create a temporary probe that contains one valid use and one plausible misuse. Use `assert_type` or `reveal_type` when inference matters. Run the project's exact checker command. Also test the oldest runtime when syntax or imports change, and run any framework that reads the annotations.
 
-Record the commands, versions, and results. If you cannot run a probe, label the design `unverified` and explain why. Do not turn an expected future error into claimed evidence.
+Record versions, commands, and results. Mark an unrun or incomplete probe as `unverified`. Remove recommendations that add annotation detail without catching a named error.
 
-Remove recommendations that only add annotation detail without catching a named error.
+### 8. Rank the findings
 
-### 8. Rank the work
+Keep urgency, evidence, and cost separate. Combining them in one severity label makes the result hard to act on.
 
-Rank findings by expected value, not by syntax.
+Set **priority** from the expected value of the change. Consider:
 
-Consider these factors:
+- The harm that the accepted error can cause
+- How likely the edit or value mix-up is
+- How many consumers inherit the weak type
+- How far the failure appears from the edit that caused it
+- Whether the weakness reaches domain code or stays in an adapter
+- Whether runtime validation already reduces the risk
 
-- **Impact:** The harm caused by the accepted error.
-- **Likelihood:** How plausible the future edit or value mix-up is.
-- **Reach:** The number of consumers that inherit the weak type.
-- **Distance:** The separation between the edit site and the failure site.
-- **Boundary position:** Domain-core weaknesses rank above contained adapter code.
-- **Runtime compensation:** Existing validation reduces urgency.
-- **Cost:** Prefer focused changes that protect many call sites.
+Use these priority labels:
 
-Use `critical`, `high`, `medium`, or `low` only when the distinction helps the reader choose an order. Explain the rank in plain language.
+- **Fix first:** The change prevents a likely or harmful error and protects important code.
+- **Fix next:** The change provides useful protection after the first group.
+- **Consider:** The change has a smaller benefit, depends on planned work, or costs more than its immediate protection.
 
-### 9. Identify system design causes
+Don't create a finding with a “no action” priority. Put useful limits in the audit record and omit issues that don't justify a change.
 
-Review every proven erosion finding and strengthening opportunity after the local review. Classify each item as `local`, `systemic`, or `both`.
+Set **evidence** independently:
 
-Use `systemic` when the weak type follows from how the system moves, owns, or transforms data. Use `local` when one declaration or implementation choice fully owns the problem. Use `both` when a local fix helps but a system design change provides a stronger result.
+- **Demonstrated:** An executed mutation produced an unchecked break in real code.
+- **Confirmed with a probe:** The checker accepted a concrete misuse of the current design and rejected it with the proposed design.
+- **Reasoned:** A manual trace found the problem, but the audit couldn't run the checker.
+- **Unverified:** The audit couldn't complete the evidence or compatibility checks required for the recommendation.
 
-Look for shared causes across findings. A design cause can affect one finding or many findings. Do not require a minimum count.
+Set **effort** independently as `low`, `medium`, or `high`. Base it on affected interfaces, callers, runtime validation, and compatibility work.
 
-Ask these questions:
+Explain labels when the reason isn't clear from the finding.
 
-1. Do several consumers parse, validate, cast, narrow, or reconstruct the same value?
-2. Does a weak data structure cross several layers that each guess its shape?
-3. Does domain logic depend on transport, storage, framework, or serialization formats?
-4. Do several local fixes repeat the same type declaration or runtime check?
-5. Does one object represent unrelated states, responsibilities, or lifecycle stages?
-6. Does dynamic dispatch spread beyond the boundary that requires it?
-7. Do casts and suppressions compensate for an interface that loses type relationships?
-8. Would moving ownership to one boundary make downstream code trusted by construction?
+### 9. Find shared design causes
 
-Trace the full data flow for each possible design cause. Identify where the value enters, changes shape, becomes trusted, and leaves the system. Name the layer that owns parsing, validation, state transitions, or dispatch in the proposed design.
+After the local review, classify every item internally as `local`, `shared`, or `both`:
 
-Consider system changes such as:
+- **Local:** One declaration or implementation fully owns the problem.
+- **Shared:** Data flow, ownership, or transformation across the system causes the weak type.
+- **Both:** A local fix helps, but a shared design change provides stronger protection.
 
-- Parse external data once, then pass a validated domain type downstream.
-- Keep raw transport models separate from trusted domain models.
-- Replace a general mapping that crosses layers with a type owned by one layer.
-- Centralize state transitions in a tagged union or state-specific object model.
-- Contain dynamic framework or plugin behavior behind a typed adapter.
-- Preserve generic or callable relationships in a shared interface instead of restoring them at each caller.
-- Move serialization and deserialization to one boundary rather than exposing wire formats to domain logic.
-- Split an object that combines unrelated responsibilities and therefore requires broad optional or union types.
+Don't add a classification table to the report. Present the preferred design and local fallback together so the reader doesn't have to connect separate sections.
 
-A system design recommendation must include all of these details:
+Look for these shared causes:
 
-- **Shared cause:** The design choice that creates the weak types.
-- **Affected items:** Every finding or opportunity that the change improves.
-- **Ownership:** The boundary or component that owns the stronger type in the proposed design.
-- **Design change:** The new data flow, interface, or responsibility split.
-- **Typing gain:** The specific error classes that become detectable.
-- **Runtime checks:** The validation that remains necessary and where it runs.
-- **Local fallback:** The local improvements to use when the design change is not possible.
-- **Scope and cost:** The interfaces, callers, and migration work affected.
-- **Verification:** Mutations or negative type-checking examples that must fail after the change.
+1. Several consumers parse, validate, cast, narrow, or rebuild the same value.
+2. A weak mapping crosses layers that each guess its shape.
+3. Domain logic depends on transport, storage, framework, or serialization formats.
+4. Several local fixes repeat the same type declaration or runtime check.
+5. One object represents unrelated states or lifecycle stages.
+6. Dynamic dispatch continues beyond the boundary that requires it.
+7. Casts and suppressions repair relationships that a shared interface loses.
+8. One earlier ownership boundary could make downstream values trusted by construction.
 
-Recommend the system design even when it has a high migration cost, if it materially improves the type guarantees. State the cost directly. Do not weaken the recommendation only to make it easier to adopt.
+Trace each candidate from its source to its final consumers. Name the component that should own parsing, validation, transitions, or dispatch.
 
-Reject a system design recommendation when it only moves code, creates a central dependency without clear ownership, or adds types without catching more errors.
+Possible shared design changes include:
 
-## Do not report
+- Parse external data once and pass a validated domain type downstream.
+- Separate raw transport models from trusted domain models.
+- Replace a cross-layer mapping with a type owned by one layer.
+- Put state transitions in a tagged union or state-specific object model.
+- Hide dynamic framework or plugin behavior behind a typed adapter.
+- Preserve callable or generic relationships in a shared interface.
+- Keep serialization and deserialization at one boundary.
+- Split an object that combines unrelated responsibilities and therefore needs broad optional or union types.
 
-Do not report these cases unless a specific error remains catchable:
+A shared design recommendation must identify:
 
-- `Any` that stays inside a validated boundary adapter.
-- A cast justified by an adjacent runtime check or schema validation.
-- Dynamic access that is the intended plugin, proxy, or framework boundary and doesn't enter domain code.
-- `object` used as a safe unknown type.
-- A type-checking bypass with a sound constraint that the project can't control.
-- An abstract collection type that offers no error-detection benefit.
-- A wrapper type that adds ceremony but no useful domain distinction.
-- A closed union for values that are open to external extension.
-- A type-level claim that still needs runtime validation.
+- The design choice that weakens the types
+- The findings that the change addresses
+- The component that should own the stronger type
+- The proposed interface, responsibility, or data flow
+- The errors that the checker can detect afterward
+- The runtime validation that remains and where it runs
+- A useful local fallback when the shared change isn't possible
+- The affected interfaces, callers, and migration work
+- The mutations or negative examples that must fail afterward
+
+Present these details in the problem-focused finding. Don't repeat them in a separate design section.
+
+Reject a shared recommendation that only moves code, adds a central dependency without clear ownership, or adds types without catching more errors.
+
+## Don't report
+
+Don't report these cases unless a specific catchable error remains:
+
+- `Any` contained inside a validated boundary adapter
+- A cast justified by an adjacent runtime check or schema validation
+- Dynamic access that stays inside an intentional plugin, proxy, or framework boundary
+- `object` used as a safe unknown type
+- A type-checking bypass with a sound constraint that the project can't control
+- An abstract collection type that adds no error detection
+- A wrapper type that adds no useful domain distinction
+- A closed union for externally extensible values
+- A static type claim presented as runtime validation
 
 ## Report format
 
-Start with a short verdict that states what the checker verifies, the main verification gaps, and the highest-value strengthening opportunity.
+Write the report for a developer who needs to decide what to change. Lead with the decision, then show the accepted mistake, recommended design, cost, and supporting evidence.
 
-Give each reported item an identifier. Use `E1`, `E2`, and so on for proven erosion. Use `T1`, `T2`, and so on for strengthening opportunities.
+Don't organize the report around internal categories. Organize it around the problems the developer can fix.
 
-### Proven erosion
+### 1. Start with the summary
 
-Use this format for each demonstrated silent break:
+State what the checker covers, the main coverage gaps, and the first change to make. Keep this introduction to three short paragraphs or fewer.
 
-```markdown
-### E1 [priority] Short finding name
-
-- **Where:** `path:line`, symbol
-- **Silent break:** A specific edit leaves this code wrong without a checker error.
-- **Evidence:** Mutation output or a hand-traced result.
-- **Reach:** Number of affected sites and files.
-- **Distance:** Edit site to failure site.
-- **Boundary:** Existing validation point or missing validation point.
-- **Fix:** Named type construct, why it fits better than nearby choices, and a focused code sketch.
-- **Support:** Parser, runtime or backport, checker, and runtime-consumer compatibility.
-- **Verification:** The mutation and design-probe commands with observed results. Mark unrun probes as unverified.
-```
-
-### Type-strengthening opportunities
-
-Use this format for each improvement that is not proven erosion:
+Then add a decision table:
 
 ```markdown
-### T1 [priority] Short opportunity name
+## Summary
 
-- **Where:** `path:line`, symbol or workflow
-- **Error caught:** The concrete mistake that the current types accept.
-- **Why accepted:** The missing distinction, state, relationship, or boundary.
-- **Design:** Named type construct, why it fits better than nearby choices, and a focused before-and-after sketch.
-- **Support:** Parser, runtime or backport, checker, and runtime-consumer compatibility.
-- **Limits:** Runtime checks that remain necessary.
-- **Cost:** Migration scope and compatibility effect.
-- **Verification:** The positive and negative probe, exact commands, and observed results. Mark unrun probes as unverified.
+The checker covers the reviewed package, but API responses lose their field
+types before they reach domain code.
+
+Parse API responses first. This change protects 14 consumers and removes six
+unchecked casts.
+
+| Priority | Problem | Risk | Recommended change | Effort |
+|---|---|---|---|---|
+| Fix first | API responses become `dict[str, Any]` | Invalid fields reach domain logic | Parse responses into `OrderResponse` | Medium |
+| Fix next | Identifier types are both `str` | Callers can swap identifiers | Add distinct identifier types | Low |
 ```
 
-### System design opportunities
+Include each reportable problem once. Use direct problem names instead of audit terms.
 
-After the local findings, include a classification table with every reported item. Give each system design recommendation a `D1`, `D2`, or later identifier.
+### 2. Write one decision card for each important problem
+
+Order cards by priority. Use numbered headings with descriptive names. Don't encode evidence categories in identifiers such as `E1`, `T1`, or `D1`.
+
+Use this structure:
+
+````markdown
+## 1. Parse API responses before domain code
+
+**Priority:** Fix first  
+**Evidence:** Demonstrated  
+**Effort:** Medium  
+**Location:** `orders/client.py:84`
+
+### What can go wrong
+
+`fetch_order()` returns `dict[str, Any]`. A caller can misspell a field or pass
+a value with the wrong type, and the checker reports no error.
+
+```python
+order = fetch_order(order_id)
+send_receipt(order["totla"])
+```
+
+### Recommended change
+
+Validate the response in `orders/client.py` and return `OrderResponse`. Keep raw
+JSON inside the API adapter.
+
+```python
+@dataclass(frozen=True)
+class OrderResponse:
+    total: Decimal
+    customer_id: CustomerId
+```
+
+This change lets the checker reject misspelled fields, missing fields, and
+incorrect field values.
+
+### Cost and limits
+
+Update `fetch_order()` and its 14 callers. Keep runtime validation because the
+API can return invalid data.
+
+### Evidence and compatibility
+
+- Mutation: Rename `total` to `amount`.
+- Result: The checker reported no error in six consumers.
+- Checker: basedpyright 1.29.2.
+- Python: The design works with the supported Python 3.11-3.13 range.
+- Command: `uv run basedpyright orders`.
+````
+
+Each card must answer these questions:
+
+1. What can go wrong?
+2. What accepted code demonstrates the problem?
+3. What change prevents it?
+4. Which errors become detectable?
+5. What does the change cost?
+6. Which runtime checks remain?
+7. What evidence supports the recommendation?
+
+Show the shortest realistic invalid example that the current checker accepts. Prefer this example over an abstract explanation of missing type information.
+
+Name the protection gained. Don't write only “use `TypedDict`” or “add a protocol.” State which missing keys, invalid calls, mixed identifiers, or other mistakes the type rejects.
+
+### 3. Keep preferred and local fixes together
+
+When a shared design change provides more protection than a local fix, show both in the same card:
 
 ```markdown
-| Item | Classification | Reason |
-|---|---|---|
-| E1 | Both | Repeated boundary parsing causes the local weak types. |
+### Options
+
+**Preferred:** Parse the response once in the API adapter. This protects every
+downstream consumer.
+
+**Local fallback:** Return a `TypedDict` from `fetch_order()`. This catches field
+mistakes but doesn't validate API data at runtime.
 ```
 
-Use this format for each `systemic` or `both` item or group:
+Explain why the preferred option catches more errors. Don't repeat the problem in a separate system design section.
+
+### 4. Group smaller improvements
+
+Write full cards for the three to five findings that most affect a decision. Put lower-value findings in a compact table when they don't need a detailed explanation:
 
 ```markdown
-### D1 [priority] Short system design name
+## Smaller improvements
 
-- **Affected items:** Finding and opportunity identifiers.
-- **Shared cause:** The system design that produces the weak types.
-- **Current data flow:** Where the value enters, changes shape, and becomes trusted.
-- **Design change:** The proposed ownership boundary, interface, or data flow.
-- **Typing gain:** The error classes that the design makes detectable.
-- **Runtime checks:** The validation that remains and where it runs.
-- **Local fallback:** The local fixes to apply if the design change is not possible.
-- **Scope and cost:** The affected interfaces, callers, and migration work.
-- **Support:** Parser, runtime or backport, checker, and runtime-consumer compatibility.
-- **Verification:** Mutations and positive and negative probes with observed results. Mark unrun probes as unverified.
+| Location | Accepted mistake | Recommended change | Evidence | Effort |
+|---|---|---|---|---|
+| `cache.py:41` | Callers can swap two integer time units | Add distinct value types | Confirmed with a probe | Low |
+| `hooks.py:19` | Decorated functions accept invalid keywords | Preserve parameters with `ParamSpec` | Demonstrated | Low |
 ```
 
-Include this section when one item qualifies. Do not wait for several related findings.
+Expand a smaller finding only when the type choice, compatibility, or runtime limit needs explanation.
 
-End with these sections:
+### 5. End with a compact audit record
 
-- **Recommended order:** List the local fixes and system changes in the order that gives the most protection.
-- **Coverage:** List the capability profile, edit classes, workflows, boundaries, and code-specific failure hypotheses reviewed. State that the hint list did not define coverage.
-- **Mutations:** List each mutation and whether the checker caught it.
-- **Excluded items:** List what you did not review and why.
-- **Novel mechanisms:** Describe problems that did not match a listed pattern. If none became findings, list the code-specific hypotheses you tested.
-- **Not reported:** List suspicious patterns you reviewed but did not report because they lacked a concrete error.
+Put reproducibility and coverage details after the recommendations:
 
-A type-design probe is a short example with a valid use that must pass and a plausible misuse that must fail. Keep probes outside the runtime test suite unless the project already uses a tool for type-checking tests. Delete temporary probes after the audit unless the user asks to retain them.
+```markdown
+## Audit record
+
+- Checker: basedpyright 1.29.2
+- Command: `uv run basedpyright src`
+- Python support: 3.11-3.13
+- Reviewed: API parsing, domain models, dispatch, decorators, and public functions
+- Excluded: Generated clients and test fixtures
+- Mutations: 12 run, eight caught, three exposed gaps, and one was inconclusive
+- Unverified: Runtime annotation handling in Pydantic
+```
+
+Include the capability profile, checked workflows, boundaries, code-specific hypotheses, exclusions, and mutation totals. State that the hint list didn't define coverage.
+
+List individual mutation commands only in the related card or when the reader needs them to reproduce the result. Don't repeat every mutation in a separate section.
+
+Mention novel mechanisms only when they produced a finding. Mention suspicious patterns without findings only when they explain an important limit of the audit.
+
+Omit empty sections. A small audit should produce a small report.
+
+When the audit finds no practical changes, say so directly after the summary. Don't add empty decision tables or finding sections. Still include the compact audit record so the reader can see what the audit covered.
+
+### Report language
+
+Use these reader-facing terms:
+
+| Internal concept | Report wording |
+|---|---|
+| Proven erosion | Demonstrated checker gap |
+| Strengthening opportunity | Type improvement |
+| Systemic cause | Shared design cause |
+| Silent break | Unchecked break |
+| Verification surface | Checker coverage |
+| Reach | Affected code |
+| Distance | Where the error appears |
+| Boundary | Validation point |
+
+Prefer plain wording in context instead of repeating these labels. For example, write “The checker reported no error in six callers” instead of “The finding has a reach of six.”
+
+Keep type-design probes outside the runtime test suite unless the project already type-checks test fixtures. Delete temporary probes after the audit unless the user asks you to keep them.

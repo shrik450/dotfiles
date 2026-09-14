@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Test whether Python types protect consumers from plausible edits.
+"""Test whether Python types protect consumers after plausible edits.
 
-The script applies one edit, runs the type checker, and reports the consumers
-that receive no new error. Supported edits include renaming or changing a field,
-changing a parameter, adding a closed-set variant or required mapping key,
-breaking a generic return relationship, changing a tuple shape, and adding
-`None` to a return type.
+The script changes one declaration in a temporary project copy and runs the
+project's type checker. It then lists possible consumers that received no new
+checker error.
 
-A consumer with no new checker error might have lost its type connection to the changed declaration.
-Review every result because an unrelated symbol can have the same name.
+Supported mutations rename or change a field, change a parameter, add a value
+to a closed set, add a required mapping key, break a generic return
+relationship, change a tuple shape, or add `None` to a return type.
 
-The script changes a temporary copy and leaves the source tree unchanged.
-It uses only the Python standard library.
+An unflagged consumer might have lost its checked connection to the changed
+declaration. Confirm every result because unrelated symbols can share a name.
 
-Usage:
+The script doesn't change the source project. It uses only the Python standard
+library.
+
+Examples:
 
     uv run mutate.py discover --root .
     uv run mutate.py run --root . --json out.json
@@ -69,16 +71,15 @@ TYPE_ALIAS_NODE = getattr(ast, "TypeAlias", None)
 @dataclass
 class Candidate:
     kind: str
-    qualname: str  # Examples include User.email, Status, and module:get_user.
+    qualname: str  # Examples: User.email, Status, and module:get_user.
     relpath: str
     lineno: int
     detail: str = ""
     symbol: str = ""  # The consumer search uses this bare name.
     # Consumers can dispatch on enum member names and literal values.
     extra_symbols: list[str] = field(default_factory=list)
-    def_end: int = (
-        0  # Consumer searches exclude the definition block through this line.
-    )
+    # Consumer searches must exclude the full declaration, not only its first line.
+    def_end: int = 0
     # The declaration fragment changed by relationship and parameter mutations.
     mutation_value: str = ""
 
@@ -186,7 +187,8 @@ def _typevar_names(tree: ast.Module) -> set[str]:
 
 def _annotation_src(src_lines: list[str], node: ast.AST) -> str | None:
     if getattr(node, "lineno", None) != getattr(node, "end_lineno", None):
-        return None  # The script skips multiline annotations to avoid corrupting them.
+        # Span replacement works on one line and could corrupt a multiline annotation.
+        return None
     line = src_lines[node.lineno - 1]
     return line[node.col_offset : node.end_col_offset]
 
@@ -732,10 +734,7 @@ def run_checker(
     extra: list[str] | None = None,
     target: str = ".",
 ) -> tuple[list[Diag], str]:
-    """Return the diagnostics and an error message.
-
-    A nonempty error message means the checker run isn't valid.
-    """
+    """Return checker diagnostics and any error that invalidates the run."""
     if checker:
         cmd = [checker, "--outputjson", target, *(extra or [])]
         output_format = "pyright-json"
@@ -893,7 +892,7 @@ def find_consumer_sites(root: Path, cand: Candidate, include_tests: bool) -> lis
     }:
         pats.append(("name", re.compile(rf"\b{re.escape(sym)}\b")))
     for extra in cand.extra_symbols:
-        # Closed-set dispatch uses member names and values, not the enum class name.
+        # Consumers can omit the class name when they compare a member's raw value.
         pats.append(("member", re.compile(rf"\b{re.escape(extra)}\b")))
         pats.append(("string", re.compile(rf"""['\"]{re.escape(extra)}['\"]""")))
 
@@ -905,7 +904,7 @@ def find_consumer_sites(root: Path, cand: Candidate, include_tests: bool) -> lis
             continue
         for i, line in enumerate(lines, 1):
             if rel == cand.relpath:
-                # The definition block is not a consumer.
+                # A declaration can contain its own symbol but can't consume itself.
                 if abs(i - cand.lineno) <= 1:
                     continue
                 if cand.def_end and cand.lineno <= i <= cand.def_end:
@@ -968,11 +967,10 @@ def adjust(
 def validate_baseline(
     root: Path, args: argparse.Namespace, cands: list[Candidate]
 ) -> str:
-    """Confirm that the checker reads the files selected for mutation.
+    """Confirm that the checker reports deliberate errors in mutation targets.
 
-    The function adds a clear type error to each target in a temporary copy.
-    Excluded files, skipped imports, and unchecked regions can cause the checker
-    to report no errors, just as fully checked code can.
+    Add one invalid assignment to each target in a temporary copy. A target that
+    produces no error might be excluded, skipped, or only partly checked.
     """
     targets: list[str] = []
     for c in cands:
@@ -1069,19 +1067,23 @@ def evaluate(
             unflagged=[asdict(s) for s in unflagged[:25]],
         )
         if not sites:
-            res.verdict = "No consumers found. This mutation provides no evidence."
+            res.verdict = (
+                "No possible consumers found. This mutation provides no evidence."
+            )
         elif not unflagged:
-            res.verdict = "Protected: The checker flagged every consumer site."
+            res.verdict = (
+                "Protected: The checker reported an error at every possible consumer."
+            )
         elif strings:
             res.verdict = (
-                f"Erosion: The mutation left {_count_phrase(len(strings), 'string-based site')} "
-                f"without an error. In total, {_count_phrase(len(unflagged), 'site')} received "
-                "no error."
+                "Possible checker gap: The checker reported no error at "
+                f"{_count_phrase(len(strings), 'string-based site')}. It reported no error at "
+                f"{_count_phrase(len(unflagged), 'possible consumer')} in total."
             )
         else:
             res.verdict = (
-                f"Review needed: {len(unflagged):,} of {len(sites):,} consumer sites received "
-                "no error. Confirm that each site consumes this symbol."
+                f"Review needed: The checker reported no error at {len(unflagged):,} of "
+                f"{len(sites):,} possible consumers. Confirm that each site uses this symbol."
             )
         return res
     finally:
@@ -1132,8 +1134,8 @@ def main() -> int:
             checker_group.add_argument(
                 "--checker-command",
                 help=(
-                    "Run another project checker command. Use {target} where the copied "
-                    "project path belongs. The script appends the path when omitted."
+                    "Run another project checker command. Put {target} where the checker "
+                    "target belongs. The script appends the target when you omit it."
                 ),
             )
             p.add_argument(
@@ -1196,8 +1198,8 @@ def main() -> int:
                 print(f"  ... {len(group) - 40:,} more")
             print()
         print(
-            "Candidates are a starting inventory, not a complete list. Dynamic access "
-            "often has no declared field to mutate. Review the code for these cases."
+            "Use candidates as a starting point, not a complete list. The script can't "
+            "mutate dynamic access without a matching declaration, so inspect it manually."
         )
         if args.json:
             Path(args.json).write_text(json.dumps([asdict(c) for c in cands], indent=2))
@@ -1222,12 +1224,11 @@ def main() -> int:
     if err:
         print(f"The script can't establish the baseline: {err}", file=sys.stderr)
         print(
-            "\nThis method requires a working checker. A checker that doesn't analyze the "
-            "code can report no errors, which can look like full type coverage. Fix missing "
-            "packages, imports, or checker "
-            "options. Pass extra options with --checker-arg. If the checker cannot run, "
-            "trace consumers by hand as SKILL.md describes. Do not report a clean result "
-            "from a failed baseline.",
+            "\nThis method requires a working checker. A checker can report no errors when "
+            "it doesn't analyze the target code. Fix the reported packages, imports, or "
+            "checker options. Pass extra options with --checker-arg. If the checker still "
+            "can't run, trace consumers manually as SKILL.md describes. Don't report a "
+            "clean result from a failed baseline.",
             file=sys.stderr,
         )
         return 1
@@ -1258,20 +1259,20 @@ def main() -> int:
             f"{error_count:>12}  {res.status:<13} {res.verdict or res.note}"
         )
 
-    eroded = [
+    possible_gaps = [
         result
         for result in results
         if result.status == "ok"
-        and result.verdict.startswith(("Erosion:", "Review needed:"))
+        and result.verdict.startswith(("Possible checker gap:", "Review needed:"))
     ]
     print(
         f"\nThe script ran {_count_phrase(len(results), 'mutation')} and found "
-        f"{_count_phrase(len(eroded), 'mutation')} with unflagged consumer sites."
+        f"{_count_phrase(len(possible_gaps), 'mutation')} with unflagged consumer sites."
     )
-    if eroded:
+    if possible_gaps:
         print(
-            "Review each unflagged site before you report it. Name the edit that causes "
-            "the silent break. See the report format in SKILL.md."
+            "Confirm each unflagged site before you report it. Name the edit that causes "
+            "the unchecked break. Use the report format in SKILL.md."
         )
     if args.json:
         Path(args.json).write_text(

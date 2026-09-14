@@ -1,172 +1,174 @@
-# Places to inspect for weak types
+# Inspection hints for weak types
 
-This reference is not a definition of a finding or a coverage checklist. Form code-specific failure hypotheses before you read it. Then use it to choose more mutation targets and strengthening reviews.
+Use this reference after you form failure hypotheses from the target code. It suggests more places to inspect, but it isn't a checklist or a definition of complete coverage.
 
-Report proven erosion only when a plausible edit breaks a consumer without a checker error. Report a strengthening opportunity when you can describe an accepted error that a practical type design would reject. You do not need an established name for the error or its mechanism.
+Report a demonstrated checker gap only when a plausible edit breaks a consumer without a checker error. Report a type improvement only when a practical design rejects a concrete mistake that the current type accepts.
 
-Search actively for mechanisms that this reference does not cover. Trace data flows, state changes, ownership boundaries, and type relationships. Describe a new mechanism in plain language when no known term fits it.
+Search for mechanisms that this reference doesn't list. Trace data, state changes, ownership boundaries, and type relationships. Describe a new mechanism in plain language when no established term fits it.
 
-Do not rely on this reference for feature availability or semantics. Build the project capability profile in `SKILL.md`, then use [the current typing research guide](current-typing.md). Confirm recent or uncertain features with the typing specification, Python documentation, `typing_extensions` documentation, checker documentation, and an executed design probe.
+Don't use this reference to decide whether a typing feature is available. First build the project capability profile from `SKILL.md`. Then use the [current typing research guide](current-typing.md) and primary sources. Test recent or uncertain features with the project's checker.
 
 ## Terms
 
-- **Type erosion:** Loss of a type checker's ability to detect a relevant error.
-- **`Any` propagation:** An `Any` type spreads through inference beyond its intended boundary.
-- **Unknown type:** Pyright's term for an implicit unknown type, such as a value from an untyped library or an unparameterized generic type.
-- **Type laundering:** A value passes through `Any` or an unchecked cast and emerges with an unsupported type.
-- **String-based typing:** Code represents an identifier as a runtime string, such as a `getattr` argument, mapping key, or status value.
-- **Typed and untyped boundary:** The point where code validates external data and converts it to a trusted type.
-- **Rename-opaque access:** A reference that a type checker cannot connect to a renamed declaration.
-- **Invalid state:** A combination of values that the domain rejects but the model can represent.
+- **Checker gap:** The checker doesn't detect a relevant error that stronger types could expose.
+- **`Any` propagation:** An `Any` value spreads through inference beyond its intended boundary.
+- **Unknown type:** Pyright's term for a type that the checker can't infer, such as a value from an untyped library or bare generic.
+- **Type laundering:** A value passes through `Any` or an unchecked cast and receives a type that runtime evidence doesn't support.
+- **String-based access:** Code names a program element with a runtime string, such as a `getattr` argument, mapping key, or status value.
+- **Typed boundary:** Code validates untyped external data and converts it to a trusted type.
+- **Rename-opaque access:** A checker can't connect a reference to the declaration that it names, so a declaration rename doesn't update or invalidate the reference.
+- **Invalid state:** A value combination that the domain rejects but the model can represent.
 - **Type relationship:** A rule that connects types, such as an input mode that determines a return type.
 
-## Explicit type-checking bypasses
+## Explicit checker bypasses
 
 Inspect these patterns first, but report only a concrete effect:
 
-- `Any` in public parameters, return types, `*args`, or `**kwargs`.
-- `cast()` without an adjacent runtime check.
-- Broad `# type: ignore` comments without an error code.
-- Stale ignore comments that `--warn-unused-ignores` reports.
-- Assertions that remove `None` without proving the domain rule.
-- `Callable[..., Any]` where callers rely on a preserved signature.
-- Repeated casts of one value in several consumers.
+- `Any` in public parameters, return types, `*args`, or `**kwargs`
+- `cast()` without an adjacent runtime check
+- Broad `# type: ignore` comments without an error code
+- Stale ignores that `--warn-unused-ignores` reports
+- Assertions that remove `None` without proving the domain rule
+- `Callable[..., Any]` where callers need the original signature
+- Repeated casts of the same value in several consumers
 
-`object` is a safe unknown type. Do not treat it as equivalent to `Any`. Suggest a protocol only when required behavior exists and a protocol catches a named error.
+`object` represents a safe unknown value. Don't treat it as equivalent to `Any`. Recommend a protocol only when required behavior exists and the protocol rejects a named mistake.
 
-## Implicit erosion
+## Implicit loss of type information
 
-Search cannot find all of these cases:
+Search alone can't find every case. Inspect:
 
-- Bare generic types, such as `list`, `dict`, `Callable`, and `tuple`.
-- Functions that return `Any` or an unknown type to many callers.
-- Untyped decorators that erase the wrapped callable's signature.
-- Classes that inherit from an untyped base class.
-- Third-party libraries without stubs or a `py.typed` marker.
-- Untyped deserialization from JSON, YAML, environment variables, or database drivers.
-- Imports under `TYPE_CHECKING` whose runtime alternatives have different behavior.
-- Generic functions that use `Any` instead of preserving an input type with `TypeVar`.
+- Bare generic types, such as `list`, `dict`, `Callable`, and `tuple`
+- Functions that return `Any` or an unknown type to many callers
+- Untyped decorators that erase the wrapped function's signature
+- Classes that inherit from an untyped base class
+- Third-party libraries without stubs or a `py.typed` marker
+- Untyped values from JSON, YAML, environment variables, or database drivers
+- Imports under `TYPE_CHECKING` whose runtime alternatives behave differently
+- Generic functions that use `Any` instead of preserving an input type with `TypeVar`
 
-An untyped return usually has wider reach than an untyped input. Trace the value through callers before you set the priority.
+An untyped return value often affects more code than an untyped input. Trace it through callers before you set its priority.
 
 ## Dynamic access and dispatch
 
-Inspect these mechanisms:
+Inspect:
 
-- `getattr`, `setattr`, `hasattr`, and `delattr` with literal or computed names.
-- `getattr(obj, "field", None)`, which can hide a field deletion or rename.
-- Custom `__getattr__` and `__setattr__` methods.
-- `SimpleNamespace`, runtime class creation, monkey patching, and global-name dispatch.
-- `**row`, `**config`, and similar expansion from an untyped mapping.
-- `operator.attrgetter` and `operator.itemgetter` with string names.
-- `functools.partial` when the resulting callable loses parameter details.
-- Framework dispatch that uses route names, task names, signals, topics, or serializer field lists.
+- `getattr`, `setattr`, `hasattr`, and `delattr` with literal or computed names
+- `getattr(obj, "field", None)`, which can hide a deleted or renamed field
+- Custom `__getattr__` and `__setattr__` methods
+- `SimpleNamespace`, runtime class creation, monkey patching, and global-name dispatch
+- `**row`, `**config`, and similar expansion from untyped mappings
+- `operator.attrgetter` and `operator.itemgetter` with string names
+- `functools.partial` when the result loses parameter details
+- Framework dispatch through route names, task names, signals, topics, or serializer field lists
 
-Dynamic access can be the correct design at a framework boundary. Check whether the dynamic value enters domain code before you report it.
+Dynamic access can be correct at a framework boundary. Report it only when the unchecked value creates a concrete risk or continues into controlled domain code.
 
 ## Weak domain models
 
-Look for these strengthening opportunities:
+Look for:
 
-- `dict[str, Any]` values whose consumers expect stable keys.
-- Plain `str` or `int` values for distinct identifiers, units, currencies, or normalized values.
-- Free-form strings for project-controlled states, modes, and kinds.
-- Several optional fields that represent mutually exclusive workflow states.
-- A status field combined with flags that permit contradictory states.
-- Tuples that act as records and whose positions are easy to confuse.
-- Same-typed positional parameters that callers can swap.
-- Mutable models that can enter invalid intermediate states.
-- Constructors that create incomplete objects for later setup.
+- `dict[str, Any]` values whose consumers expect stable keys
+- Plain `str` or `int` values that represent different identifiers, units, currencies, or normalization states
+- Free-form strings for project-controlled states, modes, and kinds
+- Several optional fields that represent mutually exclusive workflow states
+- Status fields and flags that allow conflicting states
+- Tuples used as records when callers can confuse positions
+- Same-typed positional parameters that callers can swap
+- Mutable models that permit invalid intermediate states
+- Constructors that create incomplete objects for later setup
 
-For each case, name an invalid assignment, combination, or call that the proposed type rejects.
+For each case, name the invalid assignment, state, or call that the proposed type rejects.
 
 ## Lost type relationships
 
-Look for places where annotations describe possible types but lose a useful connection:
+Look for annotations that list possible types but lose a relationship that callers need:
 
-- A return type that depends on a literal mode argument.
-- A function that returns the same type that it accepts.
-- A container transform that must preserve its element type.
-- A tuple operation that must preserve length or element positions.
-- A decorator that must preserve a callable's parameters.
-- A fluent method that must return the concrete subclass.
-- A callback whose named parameters or overloads matter.
-- A broad union that forces every caller to cast or narrow again.
-- A generic interface whose bound, constraints, variance, or defaults do not match its mutation and substitution behavior.
+- A return type that depends on a literal mode argument
+- A function that returns the same type that it accepts
+- A collection operation that preserves its element type
+- A tuple operation that preserves length or element positions
+- A decorator that preserves callable parameters
+- A fluent method that returns the concrete subclass
+- A callback whose parameter names or overloads matter
+- A broad union that makes each caller repeat the same cast or narrowing
+- A generic interface with bounds, constraints, variance, or defaults that don't match its mutation and substitution behavior
 
-Describe the relationship before choosing syntax. Research type parameters, overloads, `ParamSpec`, `Concatenate`, `Self`, callback protocols, and variadic generics as relevant. Compare bounds with constraints and generics with overloads. Verify native type parameter syntax, inferred variance, and type parameter defaults before recommending them.
+Describe the relationship first. Then compare relevant options, such as type parameters, overloads, `ParamSpec`, `Concatenate`, `Self`, callback protocols, and variadic generics.
 
-## Modern declaration and mapping features
+Don't treat bounds, constraints, generics, and overloads as interchangeable. Verify native type parameter syntax, inferred variance, and type parameter defaults before you recommend them.
 
-Inspect whether newer features can catch an error that older annotations leave open:
+## Modern declarations and mapping features
 
-- `Required` and `NotRequired` for key presence that differs from value optionality.
-- `ReadOnly` for writes that consumers must not make through a mapping interface.
-- Current `TypedDict` openness controls when extra keys are the named risk.
-- `override` for misspelled or accidentally detached overrides.
-- `dataclass_transform` when a library generates constructors or other dataclass-like behavior.
-- `LiteralString` when an API must distinguish literal-derived strings from arbitrary strings.
-- Explicit aliases and native `type` statements when alias intent or generic alias relationships matter.
-- Current type-expression features when an API accepts types as data.
+Check whether these features reject a mistake that older annotations permit:
 
-Do not report a feature because it is new. Name the accepted mistake, compare nearby constructs, and run a positive and negative probe. Check grammar, runtime name, backport, checker, and runtime-consumer support separately.
+- `Required` and `NotRequired` for key presence that differs from value optionality
+- `ReadOnly` for writes that consumers must not make through a mapping interface
+- Current `TypedDict` openness controls when unexpected keys are the risk
+- `override` for misspelled or detached overrides
+- `dataclass_transform` when a library generates dataclass-like constructors or fields
+- `LiteralString` when an API must reject strings that aren't literal-derived
+- Explicit aliases and native `type` statements when alias intent or generic relationships matter
+- Current type-expression features when an API accepts types as data
+
+Don't report a feature because it is recent. Name the accepted mistake, compare nearby options, and run a valid and invalid probe. Check syntax, runtime imports, backports, checker support, and runtime annotation consumers separately.
 
 ## Open and closed sets
 
 Inspect enums, literal unions, class hierarchies, and status strings.
 
-For a project-controlled finite set, check whether dispatch is exhaustive. A catch-all branch can accept a new variant without requiring a consumer update. Use `assert_never` where the checker supports it.
+For a project-controlled finite set, check whether dispatch is exhaustive. A catch-all branch can accept a new variant without requiring a consumer update. Use `assert_never` when the checker supports it.
 
-Do not model an externally extensible set as closed unless the boundary includes an explicit unknown case.
+Don't model an externally extensible set as closed unless the boundary includes an explicit policy for unknown values.
 
 ## Boundary validation
 
-Inspect values from these sources:
+Inspect values from:
 
-- `json.loads` and response `.json()` methods.
-- YAML loaders and configuration files.
-- Environment variables and command-line arguments.
-- Database rows and raw queries.
-- Plugin systems and runtime imports.
-- Untyped third-party libraries.
-- Pickle and other object deserializers.
+- `json.loads` and response `.json()` methods
+- YAML loaders and configuration files
+- Environment variables and command-line arguments
+- Database rows and raw queries
+- Plugin systems and runtime imports
+- Untyped third-party libraries
+- Pickle and other deserializers
 
 Prefer one parser or validation model that returns a trusted domain type. Report repeated shape guesses when several consumers validate the same data independently.
 
-A cast does not validate runtime data. Keep runtime validation when input can violate the annotation.
+A cast doesn't validate runtime data. Keep runtime checks for inputs that can violate their annotations.
 
-## Verification gaps
+## Checker coverage gaps
 
-Identify the project's checker and normal command before you inspect local code. Look in project configuration, dependency files, task definitions, developer documentation, and continuous integration.
+Find the project's checker and normal command before you inspect local code. Read project configuration, dependencies, task definitions, developer documentation, and CI workflows.
 
-Check these gaps:
+Check whether:
 
-- The checker does not run in continuous integration.
-- The checker runs but does not block a merge.
+- CI doesn't run the checker.
+- CI runs the checker but doesn't block merges when it fails.
 - Configuration excludes relevant paths.
-- Diagnostic settings leave relevant function bodies, imports, decorators, or unknown types unchecked.
+- Diagnostics leave relevant function bodies, imports, decorators, or unknown values unchecked.
 - A module-level suppression hides a file.
 - The project accepts missing imports or unknown values without review.
 - Generated code enters domain logic without a typed adapter.
-- The checker configuration does not match the supported Python version.
+- The configured Python target differs from the supported runtime versions.
 
-Confirm a gap with configuration or a deliberate type error. Don't infer safety when the checker reports no errors.
+Confirm uncertain coverage with a deliberate invalid assignment in a temporary copy. Don't treat a clean result as evidence when the checker didn't inspect the code.
 
 ## Checker configuration
 
-Use the checker and command that the project already uses. Do not introduce a different checker as part of the audit.
+Use the checker and command that the project already uses. Don't introduce another checker as part of the audit.
 
-For Pyright or basedpyright, inspect diagnostics that cover unknown values, missing type arguments, untyped decorators, untyped base classes, and unsupported casts. basedpyright also provides diagnostics for explicit and inferred `Any` types.
+For Pyright or basedpyright, inspect diagnostics for unknown values, missing type arguments, untyped decorators, untyped base classes, and unsupported casts. basedpyright also reports explicit and inferred `Any` types.
 
-Do not infer feature support from a configured target Python version. The parser, runtime library, `typing_extensions`, checker, and runtime annotation consumers are separate support layers. Run a small probe for any recent or uncertain construct.
+For ty or another checker, read its configuration and command help. Find the settings for unknown values, ignored code, imports, generic arguments, suppressions, and function bodies. Don't apply diagnostic names from a different checker.
 
-For ty or another checker, read its project configuration and command help. Identify the settings that govern unknown values, ignored code, imports, generic arguments, suppressions, and function bodies. Do not assume that settings or diagnostic names from another checker apply.
+The configured Python target doesn't prove feature support. The parser, runtime, `typing_extensions`, checker, and runtime annotation consumers are separate. Test recent or uncertain constructs.
 
-Ruff annotation rules can provide extra candidates when the project already uses Ruff. They do not replace the project's type checker or define the audit.
+Ruff annotation rules can provide extra candidates when the project already uses Ruff. They don't replace a type checker or define audit coverage.
 
 ## Search commands
 
-Use these commands to choose code for closer review. Every result needs a mutation, a traced counterexample, or a concrete strengthening case.
+Use these searches to find code for closer review. Every result needs a mutation, a traced counterexample, or a concrete strengthening case.
 
 ```bash
 # Find reflection and mapping expansion.
@@ -174,14 +176,14 @@ rg -n --type py '\b(getattr|setattr|hasattr|delattr)\s*\('
 rg -n --type py '\*\*\w+\s*\)'
 rg -n --type py 'def __(get|set)attr__'
 
-# Find explicit type-checking bypasses.
+# Find explicit checker bypasses.
 rg -n --type py '\bAny\b|\bcast\s*\(|type:\s*ignore(?!\[)'
 rg -n --type py 'dict\[str,\s*Any\]|Callable\[\.\.\.'
 
 # Find bare generic types in annotations.
 rg -n --type py ':\s*(list|dict|set|tuple|Callable)\s*[,)=\]]'
 
-# Find closed sets and check their dispatch.
+# Find closed sets and inspect their dispatch.
 rg -n --type py 'class \w+\((str, )?(Enum|StrEnum|IntEnum)\)'
 rg -n --type py -A3 'match .*:' | rg -n 'case _'
 rg -c --type py 'assert_never'
@@ -197,55 +199,57 @@ rg -n -i 'pyright|basedpyright|\bty\b|type.?check|checker|strict|exclude|ignore'
 rg -n --type py '^# type: ignore'
 ```
 
-## System design signals
+## Signals of a shared design problem
 
-Use these signals during the final review of all findings. One signal can justify a system design recommendation when the typing gain is material.
+One signal can justify a system recommendation when the new design adds meaningful type protection:
 
 - Several consumers parse or validate the same external value.
-- A transport or storage mapping crosses into domain logic.
-- Each layer defines its own partial view of one data shape.
+- A transport or storage mapping reaches domain logic.
+- Each layer defines a different partial view of one data shape.
 - Several callers repeat the same cast, narrowing check, or suppression.
-- A general mapping or broad union passes through many interfaces unchanged.
-- Domain objects contain many optional fields because they represent several lifecycle stages.
+- A general mapping or broad union crosses many interfaces unchanged.
+- One domain object represents several lifecycle stages through optional fields.
 - Framework reflection or plugin values remain dynamic after they enter controlled code.
-- Serialization field names appear throughout business logic.
+- Serialization field names appear throughout domain logic.
 - Decorators or adapters repeatedly erase and restore one callable signature.
-- The same primitive value gains a different meaning in each layer.
-- Local fixes require coordinated edits because no component clearly owns the type.
+- The same primitive type represents a different role in each layer.
+- Local fixes require coordinated edits because no component owns the type.
 
-Trace a candidate from its source to its final consumers. Check whether one boundary can convert it to a trusted type for the rest of the flow.
+Trace the value from its source to its final consumers. Identify the boundary that should convert it to a trusted type.
 
-Do not use repetition alone as proof of a design problem. Name the shared cause, the correct owner, and the added type guarantee.
+Repetition alone doesn't prove a design problem. Name the shared cause, the correct owner, and the errors that the proposed design catches.
 
 ## Type design options
 
-| Current weakness | Type design to consider |
+| Current weakness | Options to compare |
 |---|---|
 | Mapping with known keys | `TypedDict`, dataclass, or validation model |
 | Attribute probing | `Protocol` with a justified `TypeGuard` or `TypeIs` |
 | Distinct identifier roles | `NewType` or a validated value object |
-| Project-controlled status strings | `Literal` or `Enum` |
+| Project-controlled strings | `Literal` or `Enum` |
 | Nonexhaustive finite dispatch | `match` with `assert_never` |
-| Untyped decorator | `ParamSpec` with `Concatenate` when needed |
+| Untyped decorator | `ParamSpec`, with `Concatenate` when needed |
 | Callable with an erased signature | Callback protocol or `ParamSpec` |
 | Return type selected by an input mode | `@overload` with literal parameters |
-| Cast after reusable runtime validation | Ordinary narrowing, `TypeIs`, or `TypeGuard`, after comparing their semantics |
-| Unvalidated external data | One parse function or validation model |
-| Container that must preserve an element type | A type parameter with a verified bound, constraint, and variance design |
-| Tuple operation that must preserve shape | Variadic generics or a fixed tuple form |
+| Cast after reusable validation | Ordinary narrowing, `TypeIs`, or `TypeGuard` |
+| Unvalidated external data | One parser or validation model |
+| Collection that preserves element type | A type parameter with verified bounds, constraints, and variance |
+| Tuple operation that preserves shape | Variadic generics or a fixed tuple form |
 | Same-typed positional arguments | Keyword-only parameters, `NewType`, or value objects |
-| Several mutually exclusive object states | Tagged union or separate state dataclasses |
+| Mutually exclusive object states | Tagged union or separate state dataclasses |
 | Fixed keyword argument shape | `Unpack[TypedDict]` |
-| Keys with distinct presence rules | `Required` and `NotRequired` |
-| Mapping writes that consumers must not make | `ReadOnly`, when interface-level protection is sufficient |
+| Keys with different presence rules | `Required` and `NotRequired` |
+| Disallowed writes through a mapping interface | `ReadOnly` |
 | Accidental failure to override | `override` |
 | Library-generated dataclass behavior | `dataclass_transform` |
-| Arbitrary string passed to a literal-derived API | `LiteralString`, when its construction model fits |
+| Dynamic string passed to a literal-derived API | `LiteralString` |
 | Fluent return type | `Self` |
 | Repeated parsing across layers | One boundary parser that returns a domain type |
 | Transport shape in domain logic | Separate transport and domain models |
 | Dynamic values beyond a framework boundary | Typed adapter at the boundary |
 | One model for several lifecycle stages | State-specific models or a tagged union |
-| Repeated local recovery of type relationships | A shared generic, overloaded, or protocol-based interface |
+| Repeated recovery of type relationships | A shared generic, overloaded, or protocol-based interface |
 
-Choose the smallest local design that catches the named error. Then check whether a system design catches more errors or removes repeated recovery work. Include parser, runtime or backport, checker, runtime-consumer support, runtime validation, and migration cost. Run a valid and invalid design probe before reporting a nontrivial recommendation.
+Choose the smallest local design that rejects the named mistake. Then check whether a shared design change rejects more errors or removes repeated recovery work.
+
+For each recommendation, cover parser support, runtime imports or backports, checker support, runtime annotation consumers, remaining runtime validation, and migration cost. Run a valid and invalid design probe for every nontrivial recommendation.
